@@ -1,0 +1,97 @@
+#:import EngesepMenuRail libs.baseclass.navigation_bar.EngesepMenuRail
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+
+# Instanciar o menu principal
+
+<Check@MDCheckbox>:
+    group: 'group'
+    size_hint: None, None
+    size: dp(45), dp(45)
+    unselected_color: get_color_from_hex("#4682B4")
+
+EngesepMenuRail:
+    name: "menu"
+    orientation: "vertical"
+    MDToolbar:  # Criar o Menu principal
+        id:tool
+        title: "ENGESEP - Relatórios"
+        md_bg_color: rail.md_bg_color
+        AnchorLayout:
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    padding:[20,20,20,20]
+                    size_hint:(.2,1)
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    Check:
+                        active: True
+                        pos_hint: {'center_x': .5, 'center_y': .3}
+                        on_active: root.on_checkbox_active(*args,'mensal')
+                    MDLabel:
+                        text: 'mensal'
+                        halign: "center"
+                        font_style: 'Overline'
+                        theme_text_color: "Custom"
+                        text_color: get_color_from_hex("#4682B4")
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    padding:[20,20,20,20]
+                    size_hint:(.2,1)
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    Check:
+                        pos_hint: {'center_x': .5, 'center_y': .3}
+                        on_active: root.on_checkbox_active(*args,'diario')
+                    MDLabel:
+                        text: 'diário'
+                        halign: "center"
+                        font_style: 'Overline'
+                        theme_text_color: "Custom"
+                        text_color: get_color_from_hex("#4682B4")
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    size_hint:(.25,1)
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    MDRaisedButton:
+                        id:field
+                        text: "GERAR RELATÓRIO"
+                        size_hint: (1,None)
+                        height: 100
+                        pos_hint: {'center_x': .5, 'center_y': .5}
+                        md_bg_color: get_color_from_hex("#4682B4")
+                        on_release:root.gerar_relatorio()
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    size_hint:(.15,1)
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    padding:[10,10,10,10]
+                    MDIconButton:
+                        id:minimizar
+                        icon: 'sticker-minus-outline'
+                        theme_text_color: "Custom"
+                        text_color: get_color_from_hex("#ffffff")
+                        pos_hint: {'center_x': .7, 'center_y': .5}
+                        on_release:app.minimizar()
+
+    MDBoxLayout: # Criar um boxlayout para colocar os elementos
+        id:layout
+        MDNavigationRail: # Criar um submenu para identificar as configurações
+            id: rail
+            adaptive_size: True
+            md_bg_color: get_color_from_hex("#1C1C1C")
+            color_normal: get_color_from_hex("#718089")
+            color_active: get_color_from_hex("#f3ab44")
+            use_resizeable: True
+            MDNavigationRailItem:
+                icon: "connection"
+                on_release: root.transition_screen(*args,'form_config')
+            MDNavigationRailItem:
+                icon: "table"
+                on_release: root.transition_screen(*args,'table')
+            MDNavigationRailItem:
+                icon: "archive"
+                on_release: root.transition_screen(*args,'data')
+
+
+
+
