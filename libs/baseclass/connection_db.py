@@ -193,11 +193,11 @@ class ConnectionDB(metaclass=Singleton):
         # print("Seed Realizado!")
         return df
 
-    def seeddb(self):
+    def seeddb(self, name_table):
         con = self.create_connection()
         cursor = con.cursor()
         tabela = "CGH Ponte Caida"
-        name_table = 'table_' + unidecode.unidecode(tabela).replace(' ','_')
+#        name_table = 'table_' + unidecode.unidecode(tabela).replace(' ','_')
         print(name_table)
         query_create = f"CREATE TABLE IF NOT EXISTS {name_table}(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,energia_a real,energia_b real,id_a text,id_b text,nivel real,cidade text,usina text,ip_a text,ip_b text,registro_a text,registro_b text,registro_nivel text,criado_em DATE NOT NULL,ts timestamp)"
         cursor.execute(query_create)
@@ -210,7 +210,7 @@ class ConnectionDB(metaclass=Singleton):
         aux = 0
         energia1 = 0
         energia2 = 0
-        for ano in range(0,3):
+        for ano in range(0,6):
             for mes in range(1, 13):
                 for dia in range(1, 32):
                     for horas in range(0, 24):
@@ -219,9 +219,9 @@ class ConnectionDB(metaclass=Singleton):
                             try:
                                 i += 1
                                 ip_a = '198.162.10.3'
-                                ip_b = '198.162.10.3'
+                                ip_b = '198.162.10.2'
                                 anos = 2019 +ano
-                                if anos == 2021 and mes >= 6:
+                                if anos == 2022 and mes >= 2:
                                     break
                                 min_date = datetime(anos, mes, dia, horas, aux, 5, 299)
                                 id_a = 'UG-01'
@@ -247,7 +247,9 @@ class ConnectionDB(metaclass=Singleton):
                                     anoss = anos
                                 if anos != anoss:
                                     anoss= anos
+                                    print('######################################')
                                     print('dados: ', energia1, energia2,ip_a, ip_b, nivel_m, id_a, id_b, cidade, usina,min_date,timestamp, alta,baixa)
+                                    print('######################################')
                                 if nivel_m > 1400:
                                     z = 6
                                 if nivel_m < 600:
@@ -275,6 +277,20 @@ class ConnectionDB(metaclass=Singleton):
         except Exception as e:
             return Exception('Erro na conversão dict to str', e)
 
+    def inserir_data_b(self, containerx, data_hora, ts):
+        try:
+            name_table = containerx['geral']['name_table']
+            containerx = self.convert_dict_str(containerx)
+            con = self.create_connection()
+            cursor = con.cursor()
+            query_insert = f"insert into {name_table}(container, criado_em, ts) values (?,?,?)"
+            cursor.execute(query_insert, (containerx, data_hora, ts))
+            con.commit()
+            con.close()
+            return True
+        except Exception as e:
+            raise Exception('Error na migração: ', e)
+
     def inserir_data(self, containerx):
         try:
             data = datetime.now()
@@ -296,8 +312,6 @@ class ConnectionDB(metaclass=Singleton):
             print('Erro no banco de dados', e)
             return e
 
-
-
     def inserir(self,tabela,energia_a,energia_b,id_a,id_b,nivel,cidade,usina,ip_a,ip_b,registro_a,registro_b,registro_nivel):
         try:
             con = self.create_connection()
@@ -306,29 +320,29 @@ class ConnectionDB(metaclass=Singleton):
             fuso_horario = timezone('America/Sao_Paulo')
             data_hora = data.astimezone(fuso_horario)
             data_hora = data_hora.strftime('%d-%m-%Y %H:%M')
-            print(data_hora)
-            print(type(data_hora))
+#            print(data_hora)
+#            print(type(data_hora))
             timestamp = datetime.timestamp(data)
             query = f"""insert into {tabela} (energia_a,energia_b,id_a,id_b,nivel, cidade, usina,ip_a,ip_b,registro_a,registro_b,registro_nivel, criado_em, ts) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
-            print(timestamp)
-            print('salvo com sucesso',data_hora,timestamp)
-            print('----')
-            print('nome tabela: ',tabela, type(tabela))
-            print('energia a: ',energia_a,type(energia_a))
-            print('energia b: ', energia_b, type(energia_b))
-            print('id a: ',id_a,type(id_a))
-            print('id b: ', id_b, type(id_b))
-            print('nivel: ',nivel,type(nivel))
-            print('cidade: ',cidade,type(cidade))
-            print('ip a: ',ip_a,type(ip_a))
-            print('ip_b: ',ip_b,type(ip_b))
-            print('registro_a: ',registro_a,type(registro_a))
-            print('registro_b: ',registro_b,type(registro_b))
-            print('registro_nivel: ',registro_nivel,type(registro_nivel))
+#            print(timestamp)
+#            print('salvo com sucesso',data_hora,timestamp)
+#            print('----')
+#            print('nome tabela: ',tabela, type(tabela))
+#            print('energia a: ',energia_a,type(energia_a))
+#            print('energia b: ', energia_b, type(energia_b))
+#            print('id a: ',id_a,type(id_a))
+#            print('id b: ', id_b, type(id_b))
+#            print('nivel: ',nivel,type(nivel))
+#            print('cidade: ',cidade,type(cidade))
+#            print('ip a: ',ip_a,type(ip_a))
+#            print('ip_b: ',ip_b,type(ip_b))
+#            print('registro_a: ',registro_a,type(registro_a))
+#            print('registro_b: ',registro_b,type(registro_b))
+#            print('registro_nivel: ',registro_nivel,type(registro_nivel))
             cursor.execute(query, (energia_a,energia_b,id_a,id_b,nivel,cidade,usina,ip_a,ip_b,registro_a,registro_b,registro_nivel,data_hora,timestamp))
             con.commit()
             con.close()
-            print('salvo com sucesso',data_hora,timestamp)
+#            print('salvo com sucesso',data_hora,timestamp)
             return True
         except ValueError:
             con.close()
@@ -365,6 +379,24 @@ class ConnectionDB(metaclass=Singleton):
         except Exception as e:
             raise Exception('Tipo de erro: ', e)
 
+    def consulta_descriminada(self, name_table, qtd, order):
+        try:
+            con = self.create_connection()
+            cursor = con.cursor()
+            query = f'SELECT * FROM {name_table} ORDER BY id {order} LIMIT {qtd}; '
+            cursor.execute(query)
+            con.commit()
+            colunas = []
+            dados = []
+            for d in cursor.description:
+                colunas.append(d[0])
+            for linha in cursor.fetchall():
+                dados.append(list(linha))
+            con.close()
+            dado = pd.DataFrame(data=dados,columns=colunas)
+            return dado
+        except Exception as e:
+            return False
     def consulta(self,name_table):
         try:
             con = self.create_connection()
@@ -383,6 +415,17 @@ class ConnectionDB(metaclass=Singleton):
             return dado
         except Exception as e:
             return False
+    def delete_table(self, name_table):
+        try:
+            con = self.create_connection()
+            cur = con.cursor()
+            sql = f"""DELETE FROM {name_table}"""
+            cur.execute(sql)
+            con.commit()
+            con.close()
+            return True
+        except Exception as e:
+            raise Exception('Erro ao deletar a tabela', e)
 
     def delete_all(self):
         con = self.create_connection()

@@ -1,7 +1,8 @@
-__all__ = ['EngeSEPDB', 'b', 'c']
+__all__ = ['EngeSEPDB']
 __version__ = '0.1'
-__author__ = 'Cardinal Biggles'
+__author__ = 'Miliano Fernandes de oliveira junior - EngeSEP'
 
+#token = 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
 
 from kivy.config import Config
 Config.set('kivy', 'desktop', 1)
@@ -33,7 +34,8 @@ from libs.baseclass.Exception_error import E
 registrar_componentes = ['main.py', 'navigation_bar.py', 'form_new.py',
                          'table.py', 'date.py','navigation_bar.kv',
                          'function_form.py','clp_connection.py',
-                         'connection_db.py','data.py','relatorio.py']
+                         'connection_db.py','data.py','relatorio.py',
+                         'periodo.py','pdf.py']
 
 
 def abrir():
@@ -94,7 +96,7 @@ class EngeSEPDB(MDApp):
         return build
 
     def minimizar(self, *largs, **kwargs):
-        self.on_stop()
+#        self.on_stop()
         print(os.getpid())
         mem_usage = memory_usage(os.getpid(), interval=.2, timeout=1, max_usage=True)
         print(mem_usage)

@@ -13,10 +13,11 @@ from kivymd.uix.spinner import MDSpinner
 import concurrent.futures
 from unidecode import unidecode
 from libs.baseclass.Exception_error import Error
-#from random import randint
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.list import ThreeLineAvatarListItem
+from kivymd.uix.list import IconLeftWidget
+from functools import partial
 import pandas as pd
-#import time
-#import json
 
 error = Error()
 
@@ -30,11 +31,12 @@ clp_objeto = None
 boxspinner = None
 clp = []
 read_data = None
+dialog = None
 clpa = None
 clpb = None
 tentativas = 0
 name_table = None
-container = {}
+tabelas_ativas = []
 taxa_acerto = []
 cores = {
          'primary': get_color_from_hex('#0097a7'),
@@ -182,6 +184,10 @@ container_B = {'nivel_agua': {'name': 'Nível da água',
                                  'value': None,
                                  'tipo': int(1)},
         }
+
+class ItemConfirm(ThreeLineAvatarListItem):
+    divider = None
+
 # 1 passo: inicialização-
 
 def inicializacao(objeto):
@@ -189,32 +195,144 @@ def inicializacao(objeto):
         global objeto_, db
         objeto_ = objeto
         db = ConnectionDB()
-        name_table, dados = exist_db()
-        if isinstance(name_table, type(None)) and isinstance(dados, type(None)):
-            painel_aviso('Não existe tabela ativa no banco de dados, por favor configure as conexões','primary')
-            return False
-        preencher_inputs(name_table, dados)
-        dados = convert_dict_pandas(dados)
-        print(dados.columns)
-#        objeto_.subject.some_business_logic(dados,name_table)
+        ak.start(init())
 #        ak.start(connection_CLP())
     except Exception as e:
         error.msg(e)
 
 # 2 passo: verifica se existe banco de dados-
 
-def exist_db():
+async def init():
     try:
-        for table in db.list_tables():
-            dados = db.consulta(table[0])
-            if len(dados) > 0:
-                length_data = len(dados) if len(dados) < 100 else 100
-#                dados = dados[list(dados.columns)][len(dados)-length_data:len(dados)]
-                dados = dados[list(dados.columns)][0:10]
-                return table[0], dados
-        return None, None
+        global tabelas_ativas
+        with concurrent.futures.ThreadPoolExecutor() as executer:
+            data_new, name_new, tabelas_ativas = await ak.run_in_executer(migracao_db, executer)
+            if len(tabelas_ativas) >= 1:
+                msg(tabelas_ativas)
+#            if len(data_new[0]) > 1 and isinstance(name_new, type(None)):
+#                painel_aviso('Não existe tabela ativa no banco de dados, por favor configure as conexões','primary')
+#                return False
+#            dados = db.consulta_descriminada(name_new, 100,'DESC')
+#            preencher_inputs(name_new, dados)
+#            dados = convert_dict_pandas(dados)
+#            objeto_.subject.some_business_logic(dados, name_new)
     except Exception as e:
         error.msg(e)
+
+def migracao_db():
+    try:
+        colunas_old = ['id', 'energia_a', 'energia_b', 'id_a', 'id_b', 'nivel', 'cidade',
+                   'usina', 'ip_a', 'ip_b', 'registro_a', 'registro_b', 'registro_nivel',
+                   'criado_em', 'ts']
+        colunas_new = ['id', 'container', 'criado_em', 'ts']
+        tabelas_ativas = []
+        data_new = []
+        name_new = None
+        for table in db.list_tables():
+            dados = db.consulta(table[0])
+            if all([item in colunas_old for item in dados.columns]):
+                tabelas_ativas.append({'name':table[0],
+                                       'inicio':dados['criado_em'].values[0],
+                                       'fim':dados['criado_em'].values[-1],
+                                       'dados':dados,
+                                       'qtd':len(dados),
+                                       'state': False})
+            if all([item in colunas_new for item in dados.columns]) and len(dados) > len(data_new):
+                data_new = dados
+                name_new = table[0]
+        return data_new, name_new, tabelas_ativas
+    except Exception as e:
+        error.msg(e)
+
+def msg(tabelas_ativas):
+    try:
+        global dialog
+        button_migracao = MDFlatButton(text='SIM',
+                                       text_color=get_color_from_hex("#27979d"))
+        migracao = []
+        for i, item in enumerate(tabelas_ativas):
+            linha = ItemConfirm(text='Nome da tabela: ' + item['name'],
+                                secondary_text= 'De: ' + item['inicio'][0:11] + ' até: ' + item['fim'][0:11],
+                                tertiary_text= 'Qtd linhas: ' + str(item['qtd']),
+                                bg_color=cores['alert'])
+            icon_alert = IconLeftWidget(icon='alert-circle')
+            linha.add_widget(icon_alert)
+            linha.fbind('on_release',set_icon, icon_alert=icon_alert, linha=linha, item=i)
+            migracao.append(linha)
+        button_migracao.fbind('on_release',criar_migracao)
+        dialog = MDDialog(title='Selecione a tabela que deseja fazer a migração',
+                          type='confirmation',
+                          items= migracao,
+                          buttons=[MDFlatButton(text="NÃO",
+                                                text_color=get_color_from_hex("#27979d"),
+                                                on_release= fechar),
+                                   button_migracao])
+        dialog.open()
+    except Exception as e:
+        raise Exception ('Erro na migração do banco de dados : ', e)
+
+def set_icon(instance, icon_alert=None, linha=None, item=None):
+    global tabelas_ativas
+    icon_alert.icon = 'check' if icon_alert.icon != 'check' else 'alert-circle'
+    linha.bg_color = cores['check'] if linha.bg_color != cores['check'] else cores['alert']
+    tabelas_ativas[item]['state'] = False if tabelas_ativas[item]['state'] else True
+
+def fechar(*args):
+    dialog.dismiss()
+
+def criar_migracao(instance):
+    Clock.schedule_once(partial(spinner_active,'migrando'), -1)
+    try:
+        global entradas_, tabelas_ativas
+        dialog.dismiss()
+        for base in tabelas_ativas:
+            print(base['name'],': ',base['state'])
+#        dados =
+#        if not len(box_container['objetos']) >= 2:
+#            generation_container_migration(dados)
+#        colunas_migrar = ['energia_a','energia_b','nivel','criado_em','ts']
+#        for i in range(len(dados)):
+#            box_container['objetos'][0]['leituras']['acumulada']['value'] = dados['energia_a'].values[i]
+#            box_container['objetos'][1]['leituras']['acumulada']['value'] = dados['energia_b'].values[i]
+#            box_container['objetos'][0]['leituras']['nivel_agua']['value'] = dados['nivel'].values[i]
+#            box_container['objetos'][1]['leituras']['nivel_agua']['value'] = dados['nivel'].values[i]
+#            data_hora = dados['criado_em'].values[i]
+#            ts = dados['ts'].values[i]
+#            if db.inserir_data_b(box_container.copy(), data_hora, ts):
+#                pass
+#            else:
+#                print('Errro')
+#        if db.delete_table(box_container['geral']['name_table']):
+#            print('Tabela deletada: ', box_container['geral']['name_table'])
+#        print(box_container)--
+    except Exception as e:
+        raise Exception ('Erro na migração do banco de dados: ', e)
+
+def generation_container_migration(dados):
+    try:
+        global geral, container, container_, box_container
+        geral['name_usina'] = dados['usina'].values[-1]
+        geral['localizacao'] = dados['cidade'].values[-1]
+        geral['name_table'] = 'table_' + unidecode(dados['usina'].values[-1]).replace(' ','_')
+        box_container['geral'] = geral
+    #    #-------------------------------------
+        container['name'] = 'clp_1'
+        container['ip'] = dados['ip_a'].values[-1]
+        container['id'] = dados['id_a'].values[-1]
+        container_A['acumulada']['endereco'] = dados['registro_a'].values[-1]
+        container_A['nivel_agua']['endereco'] = dados['registro_nivel'].values[-1]
+        container['leituras'] = container_A
+        box_container['objetos'].append(container.copy())
+    #    #------------------------------------
+        container['name'] = 'clp_2'
+        container['ip'] = dados['ip_b'].values[-1]
+        container['id'] = dados['id_b'].values[-1]
+        container_B['acumulada']['endereco'] = dados['registro_b'].values[-1]
+        container_B['nivel_agua']['endereco'] = dados['registro_nivel'].values[-1]
+        container['leituras'] = container_B
+        box_container['objetos'].append(container.copy())
+    except Exception as e:
+        raise Exception ('Erro na migração do banco de dados: ', e)
 
 # 3 passo: Duas possibilidades [ existe banco de dados, não existe banco de dados]
 
@@ -360,13 +478,13 @@ async def connection_CLP():
         error.msg(e)
 # 2 passo: executar a função spinner de carregamento
 
-def spinner_active(texto):
+def spinner_active(texto, *args):
     try:
         global boxspinner
         boxspinner = MDFloatLayout(md_bg_color=get_random_color(.5))
         label_spinner = MDLabel(text=texto, halign='center')
         spinner = MDSpinner(size_hint=(None, None),
-                            size=(dp(100),dp(100)),
+                            size=(dp(150),dp(150)),
                             pos_hint={'center_x': .5, 'center_y': .5},
                             determinate=False,
                             active=True,
@@ -394,7 +512,6 @@ def conexao_clp():
 
     except Exception as e:
         error.msg(e)
-
 # 4 passo: buscar os registros dos endereços do CLP
 
 def search_register(registers: dict)->dict:
@@ -416,7 +533,6 @@ def filtro_connection():
         objeto_.ids['inputs_ip_b'].hint_text = 'IP Gerador 2 -' + str(clpb)
         tentativas += 1
         tempo = int(objeto_.ids['inputs_time'].text) * 3
-#        tempo = 10
         if not all([clpa,clpb]) and not any([clpa, clpb]):
             objeto_.ids['button_enviar'].text = 'conectar'
             Clock.schedule_once(new_reconnection,10*tentativas)
@@ -428,7 +544,6 @@ def filtro_connection():
         if all([clpa, clpb]):
             desabilit_inputs()
             objeto_.ids['layout'].children[0].remove_widget(objeto_.ids['button_enviar'])
-#            Clock.schedule_interval(read_clp, tempo)
             Clock.schedule_interval(read_clp, tempo)
             return
     except Exception as e:
@@ -511,13 +626,6 @@ def filtro_db(dados):
     return dados
 
 def convert_dict_pandas(data):
-#    colunas = list(data.columns)
-#    for key in box_container['objetos'][0]['leituras'].keys():
-#        colunas.append(key + '_ug1')
-#        colunas.append(key + '_ug2')
-#    data_new = pd.DataFrame(columns= colunas)
-
-
     for i, item in enumerate(data['container'].values):
         try:
             teste = eval(item)
@@ -528,10 +636,6 @@ def convert_dict_pandas(data):
                 data.loc[i,key+'_ug2'] = 0 if value['value'] is None else int(value['value'])
         except Exception as e:
             print('Erro encontrado: ', e)
-    for c in data.columns:
-        print(c)
-        print(data[c].values[0])
-    print(data)
     return data
 
 
@@ -543,9 +647,7 @@ def persistir_dados():
         containerx = box_container.copy()
         tentativas += 1
         db.inserir_data(containerx)
-        dados = db.consulta(box_container['geral']['name_table'])
-        length_data = len(dados) if len(dados) < 100 else 100
-        dados = dados[list(dados.columns)][len(dados)-length_data:len(dados)]
+        dados = db.consulta_descriminada(box_container['geral']['name_table'],100,'DESC')
         return convert_dict_pandas(dados)
     except Exception as e:
         error.msg(e)

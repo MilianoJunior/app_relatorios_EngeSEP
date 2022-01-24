@@ -52,16 +52,14 @@ class Data(MDBoxLayout):
         return self
 
     def update(self, subject: Subject) -> None:
-        print('Executando Data')
-        print(subject._data)
         self.data_table_a.row_data = []
         self.data_table_b.row_data = []
         [self.data_table_a.row_data.append(d) for d in
-                 subject._data[[value for name, value in
-                                list_a.items()]].values[::-1]]
+                 subject._data[[value for name, value in list_a.items()]].values]
+
         [self.data_table_b.row_data.append(d) for d in
-                 subject._data[[value for name, value in
-                                list_b.items()]].values[::-1]]
+                 subject._data[[value for name, value in list_b.items()]].values]
+
     def on_start(self, *args):
         pass
 

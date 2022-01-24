@@ -40,6 +40,7 @@ inputs = {
 entrada = ['Usina D','Chapecó','192.168.10.2','192.168.10.2','MW1200',
            'MW1200','UG-01','UG-02','MW1000','15']
 
+
 class FormNew(MDFloatLayout):
     spinner = None
     subject = None
@@ -65,23 +66,19 @@ class FormNew(MDFloatLayout):
                      auto_close=True,
                      tempo=1)
 
-
     def grid_inputs(self):
         layout = GridLayout(cols=2)
-        i = 0
         for chave, value in inputs.items():
             box = MDBoxLayout(orientation='horizontal',
                               padding=[20, 10, 10, 10],
                               md_bg_color=get_color_from_hex('#1E1F23'),
                               spacing=10)
             input_text = MDTextField(hint_text=value,
-#                                     text=entrada[i],
                                      current_hint_text_color=
                                      get_color_from_hex("#27979d"))
             self.ids[chave] = input_text
             box.add_widget(input_text)
             layout.add_widget(box)
-            i += 1
         enviar = MDRaisedButton(text='Conectar',
                                 pos_hint={"x": .2, "center_y": .5},
                                 md_bg_color=get_color_from_hex("#27979d"),

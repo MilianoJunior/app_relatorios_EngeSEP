@@ -25,6 +25,21 @@ EngesepMenuRail:
                     size_hint:(.2,1)
                     pos_hint: {'center_x': .5, 'center_y': .5}
                     Check:
+                        active: False
+                        pos_hint: {'center_x': .5, 'center_y': .3}
+                        on_active: root.on_checkbox_active(*args,'todos')
+                    MDLabel:
+                        text: 'todos'
+                        halign: "center"
+                        font_style: 'Overline'
+                        theme_text_color: "Custom"
+                        text_color: get_color_from_hex("#4682B4")
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    padding:[20,20,20,20]
+                    size_hint:(.2,1)
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    Check:
                         active: True
                         pos_hint: {'center_x': .5, 'center_y': .3}
                         on_active: root.on_checkbox_active(*args,'mensal')
@@ -54,7 +69,7 @@ EngesepMenuRail:
                     pos_hint: {'center_x': .5, 'center_y': .5}
                     MDRaisedButton:
                         id:field
-                        text: "GERAR RELATÓRIO"
+                        text: "   Gerar \n relatório"
                         size_hint: (1,None)
                         height: 100
                         pos_hint: {'center_x': .5, 'center_y': .5}

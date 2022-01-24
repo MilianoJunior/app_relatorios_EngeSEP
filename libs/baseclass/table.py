@@ -22,10 +22,9 @@ class Table(MDBoxLayout):
     def update(self, subject: Subject) -> None:
         dados_aux = subject._data[['id','criado_em',
                                   'name_usina','acumulada_ug1',
-                                  'acumulada_ug2','nivel_agua_ug1']].values[::-1]
+                                  'acumulada_ug2','nivel_agua_ug1']].values
         self.data_tables.row_data = []
         [self.data_tables.row_data.append(n) for n in dados_aux]
-#        print('Memoria table 1:  ',getsizeof(id(self.data_tables)))
 
     def on_start(self, *args):
         pass
