@@ -277,16 +277,22 @@ class ConnectionDB(metaclass=Singleton):
         except Exception as e:
             return Exception('Erro na conversão dict to str', e)
 
-    def inserir_data_b(self, containerx, data_hora, ts):
+    def inserir_data_b(self, con, containerx, data_hora, ts):
         try:
+            print(containerx['geral']['name_table'])
+            print(data_hora)
+            print(ts)
+            print('---')
             name_table = containerx['geral']['name_table']
             containerx = self.convert_dict_str(containerx)
-            con = self.create_connection()
+#            con = self.create_connection()
             cursor = con.cursor()
             query_insert = f"insert into {name_table}(container, criado_em, ts) values (?,?,?)"
+#            setattr(cursor,'execute',(query_insert,  data_hora, ts))
+#            eval(cursor).commit()
             cursor.execute(query_insert, (containerx, data_hora, ts))
             con.commit()
-            con.close()
+#            con.close()
             return True
         except Exception as e:
             raise Exception('Error na migração: ', e)

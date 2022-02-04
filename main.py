@@ -2,7 +2,7 @@ __all__ = ['EngeSEPDB']
 __version__ = '0.1'
 __author__ = 'Miliano Fernandes de oliveira junior - EngeSEP'
 
-#token = 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
+#token = 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
 
 from kivy.config import Config
 Config.set('kivy', 'desktop', 1)

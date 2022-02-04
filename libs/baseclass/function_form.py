@@ -18,6 +18,7 @@ from kivymd.uix.list import ThreeLineAvatarListItem
 from kivymd.uix.list import IconLeftWidget
 from functools import partial
 import pandas as pd
+import time
 
 error = Error()
 
@@ -31,6 +32,7 @@ clp_objeto = None
 boxspinner = None
 clp = []
 read_data = None
+porcentagem = 0.0
 dialog = None
 clpa = None
 clpb = None
@@ -208,6 +210,7 @@ async def init():
         with concurrent.futures.ThreadPoolExecutor() as executer:
             data_new, name_new, tabelas_ativas = await ak.run_in_executer(migracao_db, executer)
             if len(tabelas_ativas) >= 1:
+                [item.update({'data_new': data_new}) for item in tabelas_ativas]
                 msg(tabelas_ativas)
 #            if len(data_new[0]) > 1 and isinstance(name_new, type(None)):
 #                painel_aviso('Não existe tabela ativa no banco de dados, por favor configure as conexões','primary')
@@ -235,11 +238,13 @@ def migracao_db():
                                        'inicio':dados['criado_em'].values[0],
                                        'fim':dados['criado_em'].values[-1],
                                        'dados':dados,
+                                       'data_new':None,
                                        'qtd':len(dados),
                                        'state': False})
             if all([item in colunas_new for item in dados.columns]) and len(dados) > len(data_new):
                 data_new = dados
                 name_new = table[0]
+
         return data_new, name_new, tabelas_ativas
     except Exception as e:
         error.msg(e)
@@ -259,7 +264,7 @@ def msg(tabelas_ativas):
             linha.add_widget(icon_alert)
             linha.fbind('on_release',set_icon, icon_alert=icon_alert, linha=linha, item=i)
             migracao.append(linha)
-        button_migracao.fbind('on_release',criar_migracao)
+        button_migracao.fbind('on_release',spinner_active,'Aguarde \n 0.0 %')
         dialog = MDDialog(title='Selecione a tabela que deseja fazer a migração',
                           type='confirmation',
                           items= migracao,
@@ -281,15 +286,71 @@ def fechar(*args):
     dialog.dismiss()
 
 def criar_migracao(instance):
-    Clock.schedule_once(partial(spinner_active,'migrando'), -1)
     try:
-        global entradas_, tabelas_ativas
+        global entradas_, tabelas_ativas, box_container, porcentagem, objeto_
         dialog.dismiss()
+        time.sleep(3)
+#        spinner_active(f'migrando \n 0.0 %')
         for base in tabelas_ativas:
-            print(base['name'],': ',base['state'])
+            print(base['data_new']['criado_em'].values[0])
+            print(base['data_new']['criado_em'].values[-1])
+            print(base['data_new'].head())
+            print(base['data_new'].shape)
+            if base['state']:
+                if not len(box_container['objetos']) >= 2:
+                    box_container = generation_container_migration(base['dados']) if base['data_new'] is None else eval(base['data_new']['container'].values[-1])
+                if not base['data_new'] is None:
+                    base['dados']['criado_em'] = base['dados']['criado_em'].apply(lambda x: str(x)[0:10])
+                    base['data_new']['criado_em'] = base['data_new']['criado_em'].apply(lambda x: str(x)[0:10])
+                    base['dados']['criado_em_x'] = pd.DatetimeIndex(base['dados']['criado_em'])
+                    base['data_new']['criado_em_x'] = pd.DatetimeIndex(base['data_new']['criado_em'])
+                    con = db.create_connection()
+                    qtd = len(base['dados'])
+                    contador = 1
+                    for index in range(len(base['dados'])):
+                        porcentagem = round((index/qtd)*100,3)
+                        if porcentagem % contador == 0 and 'label_spinner' in [item for item in objeto_.ids]:
+                            print('ids: ',[item for item in objeto_.ids])
+                            objeto_.ids.label_spinner.text = f'migrando \n {str(porcentagem)} %'
+                            print(index, porcentagem,' : ', objeto_.ids.label_spinner.text)
+
+#                            spinner_active(f'migrando \n {str(porcentagem)} %')
+                        if not base['dados']['criado_em_x'].values[index] in base['data_new']['criado_em_x'].values:
+                            box_container['objetos'][0]['leituras']['acumulada']['value'] = base['dados']['energia_a'].values[index]
+                            box_container['objetos'][1]['leituras']['acumulada']['value'] = base['dados']['energia_b'].values[index]
+                            box_container['objetos'][0]['leituras']['nivel_agua']['value'] = base['dados']['nivel'].values[index]
+                            box_container['objetos'][1]['leituras']['nivel_agua']['value'] = base['dados']['nivel'].values[index]
+                            db.inserir_data_b(con, box_container, base['dados']['criado_em'].values[index], base['dados']['ts'].values[index])
+                    con.close()
+##                    separador(base['dados'],base['data_new'])--14042015
+##                    selecao = base['dados'].merge(base['data_new'],on=['dia'],how='outer', suffixes=['', '_'], indicator=True)
+#                else:
+#                    selecao = base['dados']
+
+#                for colunas in base['dados'].columns:
+#                print(selecao.describe())
+#                print(selecao.info())
+#                print(selecao.value_counts())
+#                for index in range(len(selecao)):
+#                    data_m = ''
+#                    for coluna in selecao.columns:
+#                        data_m += coluna + ': ' + str(selecao[coluna][index]) + ' '
+#                    print(data_m)
+##                    print(selecao[name].values[0])
+##                    print(selecao[name].values[-1])
+#                    print('---')
+#                for name in base['dados'].columns:
+#                    box_container['objetos'][0]['leituras']['acumulada']['value'] = dados['energia_a'].values[i]
+#                    box_container['objetos'][1]['leituras']['acumulada']['value'] = dados['energia_b'].values[i]
+#                    box_container['objetos'][0]['leituras']['nivel_agua']['value'] = dados['nivel'].values[i]
+#                    box_container['objetos'][1]['leituras']['nivel_agua']['value'] = dados['nivel'].values[i]
+#                    data_hora = dados['criado_em'].values[i]
+#                    ts = dados['ts'].values[i]
+#                    print(name)
+#                    print('---')
+#            print(base['name'],': ',base['state'])
 #        dados =
-#        if not len(box_container['objetos']) >= 2:
-#            generation_container_migration(dados)
+
 #        colunas_migrar = ['energia_a','energia_b','nivel','criado_em','ts']
 #        for i in range(len(dados)):
 #            box_container['objetos'][0]['leituras']['acumulada']['value'] = dados['energia_a'].values[i]
@@ -331,6 +392,7 @@ def generation_container_migration(dados):
         container_B['nivel_agua']['endereco'] = dados['registro_nivel'].values[-1]
         container['leituras'] = container_B
         box_container['objetos'].append(container.copy())
+        return box_container
     except Exception as e:
         raise Exception ('Erro na migração do banco de dados: ', e)
 
@@ -480,21 +542,25 @@ async def connection_CLP():
 
 def spinner_active(texto, *args):
     try:
-        global boxspinner
-        boxspinner = MDFloatLayout(md_bg_color=get_random_color(.5))
-        label_spinner = MDLabel(text=texto, halign='center')
-        spinner = MDSpinner(size_hint=(None, None),
-                            size=(dp(150),dp(150)),
-                            pos_hint={'center_x': .5, 'center_y': .5},
-                            determinate=False,
-                            active=True,
-                            palette=[[0.2862, 0.8431, 0.5960, 1],
-                                     [0.3568, 0.3215, 0.8666, 1],
-                                     [0.88627, 0.3647, 0.59215, 1],
-                                     [0.8784, 0.905, 0.40784, 1]])
-        boxspinner.add_widget(label_spinner)
-        boxspinner.add_widget(spinner)
-        objeto_.add_widget(boxspinner)
+        global boxspinner, objeto_
+        print(boxspinner)
+        if boxspinner is None:
+            boxspinner = MDFloatLayout(md_bg_color=get_random_color(.5))
+            label_spinner = MDLabel(text=texto, halign='center')
+            spinner = MDSpinner(size_hint=(None, None),
+                                size=(dp(150),dp(150)),
+                                pos_hint={'center_x': .5, 'center_y': .5},
+                                determinate=False,
+                                active=True,
+                                palette=[[0.2862, 0.8431, 0.5960, 1],
+                                         [0.3568, 0.3215, 0.8666, 1],
+                                         [0.88627, 0.3647, 0.59215, 1],
+                                         [0.8784, 0.905, 0.40784, 1]])
+            objeto_.ids['label_spinner'] = label_spinner
+            boxspinner.add_widget(label_spinner)
+            boxspinner.add_widget(spinner)
+            objeto_.add_widget(boxspinner)
+        print(args)
     except Exception as e:
         error.msg(e)
 # 3 passo: executar a função de conexão ao CLP
