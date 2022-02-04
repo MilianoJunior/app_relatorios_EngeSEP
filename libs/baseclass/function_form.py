@@ -392,7 +392,7 @@ def preencher_inputs(name_table, dados):
             objeto_.ids[name].text= str(value)
             entradas_[name] = objeto_.ids[name]
     except Exception as e:
-        error.msg(e)
+        error.msg(e)git
 # 2 passo: notificar pelo método observer as tabelas
 
 # 3 passo: Faz a conexão e agenda a leitura do CLP
