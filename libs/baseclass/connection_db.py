@@ -22,11 +22,14 @@ class ConnectionDB(metaclass=Singleton):
 #        print('Banco de dados inicializado')
         self.name = name
         self.name_db = 'usina_db.db'
+        name_pasta = 'DBEngesep'
+        # primeiro passo: verifica se existe uma pasta no diretorio--
         self.BASE_DIR = os.path.expanduser("~")
-        db_file = os.path.join(self.BASE_DIR,'DBEngesep',self.name_db)
-#        print(db_file)
+        if not name_pasta in os.listdir(self.BASE_DIR):
+            os.mkdir(name_pasta)
+        # segundo passo: verifico se existe o arquivo-
+        db_file = os.path.join(self.BASE_DIR,name_pasta,self.name_db)
         if not os.path.isfile(db_file):
-            os.makedirs(os.path.join(self.BASE_DIR,'DBEngesep'))
             con = self.create_connection()
             cursor = con.cursor()
             con.close()
@@ -49,6 +52,20 @@ class ConnectionDB(metaclass=Singleton):
             dados.append(list(linha))
         con.close()
         return dados
+
+    def alter_table(self, name_table, column):
+        try:
+            con = self.create_connection()
+            cursor = con.cursor()
+            query_create = f"ALTER TABLE {name_table} ADD {column}"
+            test = cursor.execute(query_create)
+            con.close()
+            dados = self.consulta(name_table)
+            print('-------------')
+            print(dados.columns)
+            print('-------------')
+        except Exception as e:
+            raise Exception('Error: função alter_table: arquivo connection_db-->', e)
 
     def create_table_unit(self, name_table)->bool:
         try:
@@ -210,7 +227,7 @@ class ConnectionDB(metaclass=Singleton):
         aux = 0
         energia1 = 0
         energia2 = 0
-        for ano in range(0,6):
+        for ano in range(0,2):
             for mes in range(1, 13):
                 for dia in range(1, 32):
                     for horas in range(0, 24):
@@ -220,7 +237,7 @@ class ConnectionDB(metaclass=Singleton):
                                 i += 1
                                 ip_a = '198.162.10.3'
                                 ip_b = '198.162.10.2'
-                                anos = 2019 +ano
+                                anos = 2020 +ano
                                 if anos == 2022 and mes >= 2:
                                     break
                                 min_date = datetime(anos, mes, dia, horas, aux, 5, 299)
@@ -243,11 +260,9 @@ class ConnectionDB(metaclass=Singleton):
                                     baixa += 1
                                     nivel_m = nivel_m + random.randrange(0, 2)
                                 aux += 15
-                                if anos == 2019:
-                                    anoss = anos
-                                if anos != anoss:
+                                if i % 1000 == 0:
                                     anoss= anos
-                                    print('######################################')
+                                    print('######################################--')
                                     print('dados: ', energia1, energia2,ip_a, ip_b, nivel_m, id_a, id_b, cidade, usina,min_date,timestamp, alta,baixa)
                                     print('######################################')
                                 if nivel_m > 1400:
@@ -279,10 +294,6 @@ class ConnectionDB(metaclass=Singleton):
 
     def inserir_data_b(self, con, containerx, data_hora, ts):
         try:
-            print(containerx['geral']['name_table'])
-            print(data_hora)
-            print(ts)
-            print('---')
             name_table = containerx['geral']['name_table']
             containerx = self.convert_dict_str(containerx)
 #            con = self.create_connection()
@@ -330,21 +341,6 @@ class ConnectionDB(metaclass=Singleton):
 #            print(type(data_hora))
             timestamp = datetime.timestamp(data)
             query = f"""insert into {tabela} (energia_a,energia_b,id_a,id_b,nivel, cidade, usina,ip_a,ip_b,registro_a,registro_b,registro_nivel, criado_em, ts) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
-#            print(timestamp)
-#            print('salvo com sucesso',data_hora,timestamp)
-#            print('----')
-#            print('nome tabela: ',tabela, type(tabela))
-#            print('energia a: ',energia_a,type(energia_a))
-#            print('energia b: ', energia_b, type(energia_b))
-#            print('id a: ',id_a,type(id_a))
-#            print('id b: ', id_b, type(id_b))
-#            print('nivel: ',nivel,type(nivel))
-#            print('cidade: ',cidade,type(cidade))
-#            print('ip a: ',ip_a,type(ip_a))
-#            print('ip_b: ',ip_b,type(ip_b))
-#            print('registro_a: ',registro_a,type(registro_a))
-#            print('registro_b: ',registro_b,type(registro_b))
-#            print('registro_nivel: ',registro_nivel,type(registro_nivel))
             cursor.execute(query, (energia_a,energia_b,id_a,id_b,nivel,cidade,usina,ip_a,ip_b,registro_a,registro_b,registro_nivel,data_hora,timestamp))
             con.commit()
             con.close()

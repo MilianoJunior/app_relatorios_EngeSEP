@@ -3,15 +3,29 @@ __version__ = '0.1'
 __author__ = 'Miliano Fernandes de oliveira junior - EngeSEP'
 
 #token = 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
-
-from kivy.config import Config
-Config.set('kivy', 'desktop', 1)
-Config.set('graphics', 'borderless', 1)
-Config.set('graphics', 'show_cursor', [0,1][1])
-Config.write()
 import os
 import sys
 from pathlib import Path
+os.environ["ENGESEP_LANG"] = "1"
+
+if getattr(sys, "frozen", False):
+    os.environ["ENGESEP_ROOT"] = sys._MEIPASS
+else:
+    sys.path.append(os.path.abspath(__file__))
+    os.environ["ENGESEP_ROOT"] = str(Path(__file__).parent)
+os.environ["ENGESEP_ASSETS"] = os.path.join(
+        os.environ["ENGESEP_ROOT"], f"assets{os.sep}")
+
+os.environ['PATH']
+from kivy.config import Config
+icon = os.path.join(os.environ["ENGESEP_ASSETS"],'logo.ico')
+Config.set('kivy', 'window_icon', icon)
+#Config.set('kivy', 'desktop', 1)
+Config.set('graphics', 'borderless', 1)
+Config.set('graphics', 'window_state', ['visible','hidden','maximized','minimized'][0])
+#Config.set('graphics', 'show_cursor', [0,1][1])
+Config.write()
+
 from kivy.core.window import Window
 from kivy.factory import Factory  # NOQA: F401
 from kivy.lang import Builder
@@ -54,20 +68,6 @@ class KvHandler(FileSystemEventHandler):
             if os.path.basename(event.src_path) == s:
                 self.callback(os.path.basename(event.src_path))
 
-
-os.environ["ENGESEP_LANG"] = "1"
-
-if getattr(sys, "frozen", False):
-    os.environ["ENGESEP_ROOT"] = sys._MEIPASS
-else:
-    sys.path.append(os.path.abspath(__file__))
-    os.environ["ENGESEP_ROOT"] = str(Path(__file__).parent)
-os.environ["ENGESEP_ASSETS"] = os.path.join(
-        os.environ["ENGESEP_ROOT"], f"assets{os.sep}")
-
-os.environ['PATH']
-
-
 class EngeSEPDB(MDApp):
 
     def __init__(self, *args, **kwargs):
@@ -75,9 +75,10 @@ class EngeSEPDB(MDApp):
         ExceptionManager.add_handler(E(self))
         self.contador = 0
         self.title = "Sistema de relatórios - versão desenvolvimento"
-        self.icon = os.path.join(os.environ["ENGESEP_ASSETS"], "logo.png")
+        self.icon = icon
         self.theme_cls.primary_palette = "Teal"
         Window.system_size = [900, 600]
+        Window.fullscreen = False
         Window.top = 40
         Window.left = 10
 
@@ -96,6 +97,8 @@ class EngeSEPDB(MDApp):
         return build
 
     def minimizar(self, *largs, **kwargs):
+        Window.fullscreen = False
+        Window.system_size = [900, 600]
 #        self.on_stop()
         print(os.getpid())
         mem_usage = memory_usage(os.getpid(), interval=.2, timeout=1, max_usage=True)
