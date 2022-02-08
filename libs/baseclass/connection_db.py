@@ -61,9 +61,6 @@ class ConnectionDB(metaclass=Singleton):
             test = cursor.execute(query_create)
             con.close()
             dados = self.consulta(name_table)
-            print('-------------')
-            print(dados.columns)
-            print('-------------')
         except Exception as e:
             raise Exception('Error: função alter_table: arquivo connection_db-->', e)
 
@@ -120,7 +117,7 @@ class ConnectionDB(metaclass=Singleton):
         # con = self.create_connection()
         # cursor = con.cursor()
         tabela = "CGH TESTE"
-        name_table = 'table_' + unidecode.unidecode(tabela).replace(' ','_')
+        name_table = 'table_' + unidecode(tabela).replace(' ','_')
         print(name_table)
         # query_create = f"CREATE TABLE IF NOT EXISTS {name_table}(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,energia_a real,energia_b real,id_a text,id_b text,nivel real,cidade text,usina text,ip_a text,ip_b text,registro_a text,registro_b text,registro_nivel text,criado_em DATE NOT NULL,ts timestamp)"
         # cursor.execute(query_create)
@@ -210,11 +207,11 @@ class ConnectionDB(metaclass=Singleton):
         # print("Seed Realizado!")
         return df
 
-    def seeddb(self, name_table):
+    def seeddb(self):
         con = self.create_connection()
         cursor = con.cursor()
         tabela = "CGH Ponte Caida"
-#        name_table = 'table_' + unidecode.unidecode(tabela).replace(' ','_')
+        name_table = 'table_' + unidecode(tabela).replace(' ','_')
         print(name_table)
         query_create = f"CREATE TABLE IF NOT EXISTS {name_table}(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,energia_a real,energia_b real,id_a text,id_b text,nivel real,cidade text,usina text,ip_a text,ip_b text,registro_a text,registro_b text,registro_nivel text,criado_em DATE NOT NULL,ts timestamp)"
         cursor.execute(query_create)
@@ -260,7 +257,7 @@ class ConnectionDB(metaclass=Singleton):
                                     baixa += 1
                                     nivel_m = nivel_m + random.randrange(0, 2)
                                 aux += 15
-                                if i % 1000 == 0:
+                                if i % 5000 == 0:
                                     anoss= anos
                                     print('######################################--')
                                     print('dados: ', energia1, energia2,ip_a, ip_b, nivel_m, id_a, id_b, cidade, usina,min_date,timestamp, alta,baixa)
@@ -296,14 +293,10 @@ class ConnectionDB(metaclass=Singleton):
         try:
             name_table = containerx['geral']['name_table']
             containerx = self.convert_dict_str(containerx)
-#            con = self.create_connection()
             cursor = con.cursor()
             query_insert = f"insert into {name_table}(container, criado_em, ts) values (?,?,?)"
-#            setattr(cursor,'execute',(query_insert,  data_hora, ts))
-#            eval(cursor).commit()
             cursor.execute(query_insert, (containerx, data_hora, ts))
             con.commit()
-#            con.close()
             return True
         except Exception as e:
             raise Exception('Error na migração: ', e)
@@ -323,11 +316,9 @@ class ConnectionDB(metaclass=Singleton):
             cursor.execute(query_insert, (containerx,data_hora,timestamp))
             con.commit()
             con.close()
-            print('Salvo no banco de dados com sucesso')
             return True
         except Exception as e:
-            print('Erro no banco de dados', e)
-            return e
+            raise Exception('Error inserir data: ', e)
 
     def inserir(self,tabela,energia_a,energia_b,id_a,id_b,nivel,cidade,usina,ip_a,ip_b,registro_a,registro_b,registro_nivel):
         try:
@@ -337,49 +328,15 @@ class ConnectionDB(metaclass=Singleton):
             fuso_horario = timezone('America/Sao_Paulo')
             data_hora = data.astimezone(fuso_horario)
             data_hora = data_hora.strftime('%d-%m-%Y %H:%M')
-#            print(data_hora)
-#            print(type(data_hora))
             timestamp = datetime.timestamp(data)
             query = f"""insert into {tabela} (energia_a,energia_b,id_a,id_b,nivel, cidade, usina,ip_a,ip_b,registro_a,registro_b,registro_nivel, criado_em, ts) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
             cursor.execute(query, (energia_a,energia_b,id_a,id_b,nivel,cidade,usina,ip_a,ip_b,registro_a,registro_b,registro_nivel,data_hora,timestamp))
             con.commit()
             con.close()
-#            print('salvo com sucesso',data_hora,timestamp)
             return True
         except ValueError:
             con.close()
             return ValueError
-    def inserirb(self,turbina,dados):
-        try:
-            MWARRAY = {
-                'acumulada': ' text',
-                'distribuidor': ' text',
-                'potencia_ativa_real': ' text',
-                'potencia_ativa_solicitada': ' text',
-                'fp': ' text',
-                'pressao_oleo': ' text',
-                'temperatura_UHRLM': ' text',
-                'temperatura_UHRV': ' text',
-                'velocidade': ' text',
-            }
-            con = self.create_connection()
-            cursor = con.cursor()
-            data = datetime.now()
-            fuso_horario = timezone('America/Sao_Paulo')
-            data_hora = data.astimezone(fuso_horario)
-            timestamp = datetime.timestamp(data)
-            data_hora = data_hora.strftime('%d-%m-%Y %H:%M')
-            print(dados)
-            print(turbina)
-            tipos = ['criado_em', 'nivel_agua']
-            [tipos.append(s) for s in MWARRAY.keys()]
-            query = f"""insert into {turbina} {tuple(tipos)} values (?,?,?,?,?,?,?,?,?,?,?)"""
-            valores= [data_hora]
-            [valores.append(s) for s in dados.values()]
-            print(tuple(valores),len(valores))
-            print(tuple(tipos),len(tipos))
-        except Exception as e:
-            raise Exception('Tipo de erro: ', e)
 
     def consulta_descriminada(self, name_table, qtd, order):
         try:

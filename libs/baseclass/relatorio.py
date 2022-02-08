@@ -25,11 +25,8 @@ class Relatorio():
 
     def button_start(self, period: str, ancora=None):
         self.dados = self.db.consulta(self.name_db)
-        print('----------------')
-#        if self.db.create_table('teste_migracao'):
-#            print('Tabela criada com sucesso')
-#            self.db.seeddb('teste_migracao')
-
+        print(self.name_db)
+        print(self.dados.info())
         self.ancora = ancora
 #        getattr(self, period)()
 

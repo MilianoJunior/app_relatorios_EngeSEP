@@ -24,7 +24,12 @@ class Table(MDBoxLayout):
                                   'name_usina','acumulada_ug1',
                                   'acumulada_ug2','nivel_agua_ug1']].values
         self.data_tables.row_data = []
-        [self.data_tables.row_data.append(n) for n in dados_aux]
+        for lista in dados_aux:
+            dados = []
+            for s in lista:
+                dados.append(f"[size=12]{str(s)}[/size]")
+            self.data_tables.row_data.append(dados)
+#        [self.data_tables.row_data.append(n) for n in dados_aux]
 
     def on_start(self, *args):
         pass

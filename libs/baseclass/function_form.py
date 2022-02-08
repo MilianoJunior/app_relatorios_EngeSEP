@@ -197,8 +197,8 @@ def inicializacao(objeto):
         global objeto_, db
         objeto_ = objeto
         db = ConnectionDB()
+#        db.seeddb()
         ak.start(init())
-#        ak.start(connection_CLP())
     except Exception as e:
         error.msg(e)
 
@@ -212,15 +212,15 @@ async def init():
             if len(tabelas_ativas) >= 1:
                 [item.update({'data_new': data_new}) for item in tabelas_ativas]
                 msg(tabelas_ativas)
-                inicializacao(objeto_)
             elif len(data_new) > 1 and not isinstance(name_new, type(None)):
-                data_new = data_new.sort_values(by=['criado_em'],ascending=True)
                 data_new['criado_em'] = data_new['criado_em'].apply(lambda x: str(x)[0:19])
+                data_new = data_new.sort_values(by=['criado_em'],ascending=True)
                 preencher_inputs(name_new, data_new)
-                datas = convert_dict_pandas(data_new)
-                datas = datas.tail(100).iloc[::-1]
-                objeto_.subject.some_business_logic(datas, name_new)
-                ak.start(connection_CLP())
+                data_new = data_new.tail(100).iloc[::-1]
+                data_new = data_new.reset_index(drop=True)
+                data_new = convert_dict_pandas(data_new)
+                objeto_.subject.some_business_logic(data_new, name_new)
+#                ak.start(connection_CLP())
             else:
                 painel_aviso('Não existe tabela ativa no banco de dados, por favor configure as conexões','primary')
                 return False
@@ -295,9 +295,9 @@ def criar_migracao(instance):
         for base in tabelas_ativas:
             if base['state']: #verifico qual tabela foi escolhida-
                 if not len(box_container['objetos']) >= 2: # verifico se existe algum box container ativo
+                    print('Generation container sendo executada')
                     box_container = generation_container_migration(base['dados']) if len(base['data_new']) < 1 else eval(base['data_new']['container'].values[-1])
                 if len(base['data_new']) > 1:
-#                    print('Existe uma tabela nova com dados')
                     base['dados']['criado_em'] = base['dados']['criado_em'].apply(lambda x: str(x)[0:10])
                     base['data_new']['criado_em'] = base['data_new']['criado_em'].apply(lambda x: str(x)[0:10])
                     base['dados']['criado_em_x'] = pd.DatetimeIndex(base['dados']['criado_em'])
@@ -306,8 +306,6 @@ def criar_migracao(instance):
                     con = db.create_connection()
                     dados_migrados = 0
                     for index in range(len(base['dados'])):
-                        if index > 10:
-                            break
                         if not base['dados']['criado_em_x'].values[index] in base['data_new']['criado_em_x'].values:
                             box_container['objetos'][0]['leituras']['acumulada']['value'] = base['dados']['energia_a'].values[index]
                             box_container['objetos'][1]['leituras']['acumulada']['value'] = base['dados']['energia_b'].values[index]
@@ -318,15 +316,13 @@ def criar_migracao(instance):
                     con.close()
                     db.alter_table(base['name'],'desativada')
                     dialog.dismiss()
-                    print('Migração completa', dados_migrados)
+                    inicializacao(objeto_)
                 else:
                     # primeiro passo: criar uma tabela nova
                     create_table()
                     # segundo passo: preparar os dados antigos para tabela nova--
                     con = db.create_connection()
                     for index in range(len(base['dados'])):
-                        if index > 10:
-                            break
                         box_container['objetos'][0]['leituras']['acumulada']['value'] = base['dados']['energia_a'].values[index]
                         box_container['objetos'][1]['leituras']['acumulada']['value'] = base['dados']['energia_b'].values[index]
                         box_container['objetos'][0]['leituras']['nivel_agua']['value'] = base['dados']['nivel'].values[index]
@@ -335,8 +331,7 @@ def criar_migracao(instance):
                     con.close()
                     db.alter_table(base['name'],'desativada')
                     dialog.dismiss()
-                    print('Migração completa')
-
+                    inicializacao(objeto_)
     except Exception as e:
         raise Exception ('Erro na migração do banco de dados: ', e)
 
@@ -392,7 +387,7 @@ def preencher_inputs(name_table, dados):
             objeto_.ids[name].text= str(value)
             entradas_[name] = objeto_.ids[name]
     except Exception as e:
-        error.msg(e)git
+        error.msg(e)
 # 2 passo: notificar pelo método observer as tabelas
 
 # 3 passo: Faz a conexão e agenda a leitura do CLP
@@ -514,7 +509,6 @@ async def connection_CLP():
 def spinner_active(texto, *args):
     try:
         global boxspinner, objeto_
-        print(boxspinner)
         if boxspinner is None:
             boxspinner = MDFloatLayout(md_bg_color=get_random_color(.5))
             label_spinner = MDLabel(text=texto, halign='center')
@@ -531,7 +525,6 @@ def spinner_active(texto, *args):
             boxspinner.add_widget(label_spinner)
             boxspinner.add_widget(spinner)
             objeto_.add_widget(boxspinner)
-        print(args)
     except Exception as e:
         error.msg(e)
 # 3 passo: executar a função de conexão ao CLP
@@ -634,7 +627,6 @@ async def CLP_G():
                     valor = await ak.run_in_executer(leitura_clp, executer)
                     box_B['leituras'][key] = valor
             dados = await ak.run_in_executer(persistir_dados, executer)
-            print(dados.columns)
             objeto_.subject.some_business_logic(dados, box_container['geral']['name_table'])
     except Exception as e:
         error.msg(e)
@@ -672,7 +664,7 @@ def convert_dict_pandas(data):
             for key, value in teste['objetos'][1]['leituras'].items():
                 data.loc[i,key+'_ug2'] = 0 if value['value'] is None else int(value['value'])
         except Exception as e:
-            print('Erro encontrado: ', e)
+            error.msg(e)
     return data
 
 

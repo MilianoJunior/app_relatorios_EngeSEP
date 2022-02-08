@@ -6,6 +6,7 @@ __author__ = 'Miliano Fernandes de oliveira junior - EngeSEP'
 import os
 import sys
 from pathlib import Path
+import subprocess
 os.environ["ENGESEP_LANG"] = "1"
 
 if getattr(sys, "frozen", False):
@@ -44,6 +45,8 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from memory_profiler import memory_usage
 from libs.baseclass.Exception_error import E
+from sys import getsizeof
+from libs.baseclass.function_form import *
 
 registrar_componentes = ['main.py', 'navigation_bar.py', 'form_new.py',
                          'table.py', 'date.py','navigation_bar.kv',
@@ -53,7 +56,8 @@ registrar_componentes = ['main.py', 'navigation_bar.py', 'form_new.py',
 
 
 def abrir():
-    os.system("clear")
+    print('Executando outro processo')
+#    os.system("clear")
     os.system("python3 main.py")
 
 
@@ -72,7 +76,7 @@ class EngeSEPDB(MDApp):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        ExceptionManager.add_handler(E(self))
+#        ExceptionManager.add_handler(E(self))
         self.contador = 0
         self.title = "Sistema de relatórios - versão desenvolvimento"
         self.icon = icon
@@ -97,9 +101,17 @@ class EngeSEPDB(MDApp):
         return build
 
     def minimizar(self, *largs, **kwargs):
-        Window.fullscreen = False
-        Window.system_size = [900, 600]
+#        Window.fullscreen = False-------
+#        Window.system_size = [900, 600]
 #        self.on_stop()
+        def sizep(e):
+            return e['value']
+        memoria_usada = []
+        for s in globals():
+            memoria_usada.append({'name': s, 'value': getsizeof(s)})
+        memoria_usada.sort(key=sizep)
+        print(memoria_usada)
+        print('---')
         print(os.getpid())
         mem_usage = memory_usage(os.getpid(), interval=.2, timeout=1, max_usage=True)
         print(mem_usage)
@@ -109,22 +121,43 @@ class EngeSEPDB(MDApp):
     def rail_open(self):
         pass
 
+    def stopTouchApp(self):
+        EventLoop = EventLoopBase()
+        '''Stop the current application by leaving the main loop'''
+        if EventLoop is None:
+            return
+        if EventLoop.status in ('stopped', 'closed'):
+            return
+        if EventLoop.status != 'started':
+            if not EventLoop.stopping:
+                EventLoop.stopping = True
+                Clock.schedule_once(lambda dt: self.stopTouchApp(), 0)
+            return
+        EventLoop.close()
+
     def on_stop(self, *args):
+        os.system("exit()")
+        self.stopTouchApp()
+        self.get_running_app().stop()
+#        self.get_running_app().stop()
         print('on_stop: ativado')
-        self.title = str(self.contador)
-        print('objeto : ', id(self))
-        Window.close()
 
     @mainthread
     def update(self, target, *args):
-        print('executando update')
-        self.stop()
-        pc2 = multiprocessing.Process(target=abrir)
-        pc2.start()
-        pc2.join()
-        self.stop()
-        self.contador += 1
-        print('executando update')
+#        subprocess.call('python3 --version', shell=True)
+        print('executando update----3')
+        os.system("x-terminal-emulator -e python3 --version")
+#        os.system("exit()")
+
+
+#        os.system("clear")
+#        os.system("python3 main.py")
+#        self.on_stop()
+#        pc2 = multiprocessing.Process(target=abrir)
+#        pc2.start()
+#        pc2.join()
+#        del self
+#        self.on_stop()
 
 
 if __name__ == "__main__":
