@@ -7,7 +7,7 @@ from kivy.properties import ListProperty
 from sys import getsizeof
 
 list_a = {
-                '[size=14]Nr. UG-01[/size]': 'id',
+                '[size=14]Nr. UG-010[/size]': 'id',
                 '[size=14]Data[/size]': 'criado_em',
                 '[size=14]Nível de água[/size]': 'nivel_agua_ug1',
                 '[size=14]Energia[/size]': 'acumulada_ug1',

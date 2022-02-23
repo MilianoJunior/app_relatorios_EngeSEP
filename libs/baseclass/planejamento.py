@@ -15,5 +15,12 @@ Etapas para terminar
 7 - Criar uma classe para salvar os dados no firebase.
 
 
+Candidaturas para trabalho remoto - Aguardando resposta
+
+1 - Empresa desconhecida- facebook - Programador Python - 07-02-2022- enviado o currículo
+2 - Empresa QUA B - linkedin - Programador Python - 07-02-2022- enviado o currículo
+3 - Empresa MediaLab- linkedin - Software Engineer, Backend (Remote) - 08-02-2022- enviado o currículo
+4 - Energetica comercializadora - programathor - Desenvolvedor python - 08-02-2022 - candidatado
+
 '''
 

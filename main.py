@@ -17,7 +17,6 @@ else:
 os.environ["ENGESEP_ASSETS"] = os.path.join(
         os.environ["ENGESEP_ROOT"], f"assets{os.sep}")
 
-os.environ['PATH']
 from kivy.config import Config
 icon = os.path.join(os.environ["ENGESEP_ASSETS"],'logo.ico')
 Config.set('kivy', 'window_icon', icon)
@@ -101,9 +100,6 @@ class EngeSEPDB(MDApp):
         return build
 
     def minimizar(self, *largs, **kwargs):
-#        Window.fullscreen = False-------
-#        Window.system_size = [900, 600]
-#        self.on_stop()
         def sizep(e):
             return e['value']
         memoria_usada = []
@@ -123,7 +119,7 @@ class EngeSEPDB(MDApp):
 
     def stopTouchApp(self):
         EventLoop = EventLoopBase()
-        '''Stop the current application by leaving the main loop'''
+        '''Stop the current application by leaving the main loop-'''
         if EventLoop is None:
             return
         if EventLoop.status in ('stopped', 'closed'):
@@ -139,14 +135,18 @@ class EngeSEPDB(MDApp):
         os.system("exit()")
         self.stopTouchApp()
         self.get_running_app().stop()
-#        self.get_running_app().stop()
+#        self.get_running_app().stop()-----
         print('on_stop: ativado')
 
     @mainthread
     def update(self, target, *args):
 #        subprocess.call('python3 --version', shell=True)
         print('executando update----3')
-        os.system("x-terminal-emulator -e python3 --version")
+        os.system("gnome-terminal -- python3 teste.py")
+        self.on_stop()
+        del self
+        os.system("exit()")
+
 #        os.system("exit()")
 
 

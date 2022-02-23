@@ -5,6 +5,9 @@ from libs.baseclass.observer_db import Subject
 from libs.baseclass.periodo import Periodo
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.filemanager import MDFileManager
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.spinner import MDSpinner
+from kivy.utils import get_random_color
 from unidecode import unidecode
 from kivymd.toast import toast
 from kivy.metrics import dp
@@ -12,9 +15,19 @@ from datetime import datetime
 from kivy.utils import get_color_from_hex
 import pandas as pd
 from os import path
+from functools import partial
+from kivy.clock import Clock
+import asynckivy as ak
+from kivymd.uix.spinner import MDSpinner
+from kivymd.uix.dialog import MDDialog
+import concurrent.futures
 import os
+import time
 
 class Relatorio():
+
+    boxspinner = False
+    dialog = False
 
     def __init__(self):
         self.db = ConnectionDB()
@@ -25,10 +38,8 @@ class Relatorio():
 
     def button_start(self, period: str, ancora=None):
         self.dados = self.db.consulta(self.name_db)
-        print(self.name_db)
-        print(self.dados.info())
         self.ancora = ancora
-#        getattr(self, period)()
+        getattr(self, period)()
 
     def diario(self):
         inicio = self.dados['criado_em'].values[0]
@@ -66,24 +77,53 @@ class Relatorio():
         self.file_manager.close()
 
     def select_path(self, path):
-        self.exit_manager()
         data_e_hora = datetime.now().strftime('%d-%m-%H-%M')
         name=f'ensegep-{unidecode(data_e_hora)}-.csv'
         path_save = os.path.join(path, name)
-        data = self.convert_dict_pandas()
-        data = self.convert_all(data)
-        data.to_csv(path_save)
-        del data
+        inicio = time.time()
+        async def load():
+            with concurrent.futures.ThreadPoolExecutor() as executer:
+                await ak.run_in_executer(self.convert_all, executer)
+                self.dados.to_csv(path_save)
+                del self.dados
+        ak.start(load())
+        Clock.schedule_once(partial(self.time_loss,inicio),2)
+        self.exit_manager()
+        
+
+    def time_loss(self, time_actual, *args):
+        try:
+            dif_time = time.time() - time_actual
+            if not self.boxspinner:
+                self.boxspinner = True
+                spinner = MDSpinner(size_hint=(None, None),
+                                    size=(dp(120), dp(120)),
+                                    pos_hint={'x': 1, 'center_y': .5},
+                                    active=True,
+                                    palette=[[0.28627450980392155, 0.8431372549019608, 0.596078431372549, 1],
+                                           [0.3568627450980392, 0.3215686274509804, 0.8666666666666667, 1],
+                                           [0.8862745098039215, 0.36470588235294116, 0.592156862745098, 1],
+                                           [0.8784313725490196, 0.9058823529411765, 0.40784313725490196, 1]])
+                # box.add_widget(spinner)
+                self.dialog = MDDialog(title ='Aguarde...', 
+                                       type="custom", 
+                                       content_cls = spinner,
+                                       md_bg_color=(0.28627450980392155, 0.8431372549019608, 0.596078431372549, 1),
+                                       radius=[20, 7, 20, 7])
+                self.dialog.size = [180, 100]
+                self.dialog.open()
+            # self.dialog.title = 'Aguarde: '+str(round(dif_time))
+        except Exception as e:
+            print('Erro: ', e)
 
     def todos(self):
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.select_path,
-            preview=True,
-        )
+            preview=False)
         home = path.expanduser('~')
         location = path.join(home, 'Downloads')
-        self.file_manager.show(location)  # output manager to the screen
+        self.file_manager.show(location)  # output manager to the screen--
         self.manager_open = True
 
     def on_save(self, instance, value, date_range):
@@ -103,40 +143,17 @@ class Relatorio():
         pdf = PDF()
         pdf.gerar(data_selection, descricao)
 
-    def convert_dict_pandas(self):
-        colunas=['id','energia_a' ,'energia_b','id_a','id_b',
-                 'nivel', 'cidade', 'usina','ip_a','ip_b','registro_a','registro_b',
-                 'registro_nivel', 'criado_em', 'ts']
-        dados = []
-        for i in range(0, len(self.dados)):
-            geral = eval(self.dados['container'].values[i])
-            energia_a = geral['objetos'][0]['leituras']['acumulada']['value']
-            energia_b = geral['objetos'][1]['leituras']['acumulada']['value']
-            id_a = geral['objetos'][0]['id']
-            id_b = geral['objetos'][1]['id']
-            nivel = geral['objetos'][0]['leituras']['nivel_agua']['value']
-            cidade = geral['geral']['localizacao']
-            usina = geral['geral']['name_usina']
-            ip_a = geral['objetos'][0]['ip']
-            ip_b = geral['objetos'][1]['ip']
-            registro_a = geral['objetos'][0]['leituras']['acumulada']['endereco']
-            registro_b = geral['objetos'][1]['leituras']['acumulada']['endereco']
-            registro_nivel = geral['objetos'][0]['leituras']['nivel_agua']['endereco']
-            criado_em = self.dados['criado_em'].values[i]
-            ts = self.dados['ts'].values[i]
-            dados.append([i, energia_a, energia_b, id_a, id_b, nivel, cidade, usina,
-                          ip_a, ip_b, registro_a, registro_b, registro_nivel, criado_em, ts])
-        data = pd.DataFrame(dados, columns=colunas)
-        return data
-
-    def convert_all(self, data):
+    def convert_all(self, *args):
         for i, item in enumerate(self.dados['container'].values):
             try:
+                if i%5000 == 0 and bool(self.dialog):
+                    self.dialog.title = 'Aguarde: ' + str(round(i/len(self.dados))) + '%'
+                print('Aguarde: ' + str(round(i/len(self.dados))) + '%', i, len(self.dados))
                 teste = eval(item)
                 for key, value in teste['objetos'][0]['leituras'].items():
-                    data.loc[i,key+'_ug1'] = 0 if value['value'] is None else int(value['value'])
+                    self.dados.loc[i,key+'_ug1'] = 0 if value['value'] is None else int(value['value'])
                 for key, value in teste['objetos'][1]['leituras'].items():
-                    data.loc[i,key+'_ug2'] = 0 if value['value'] is None else int(value['value'])
+                    self.dados.loc[i,key+'_ug2'] = 0 if value['value'] is None else int(value['value'])
             except Exception as e:
-                print('Erro encontrado: ', e)
-        return data
+                raise Exception('Error convert data: ', e)
+        
