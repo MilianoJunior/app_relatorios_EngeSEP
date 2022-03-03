@@ -22,9 +22,9 @@ Software com interface responsiva, que permite ao operador, configurar, visualiz
 ```
 ### Interface
 
-![configuração de conexão](assets/c.png)
-![vizualização dos dados](assets/a.png)
-![migração do banco de dados](assets/b.png)
+![configuração de conexão](assets/imagens/config.png)
+![vizualização dos dados](assets/imagens/interface.png)
+![migração do banco de dados](assets/imagens/login.png)
 
 ### contato
 jrmfilho37@gmail.com
