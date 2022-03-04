@@ -39,24 +39,27 @@ class MenuPrint(MDBoxLayout):
             self.add_widget(layout)
             return self
         except Exception as e:
-            raise InterfaceException(e)
+            raise InterfaceException(e)()
 
     def active_dropdow(self, button):
-        print(button)
-        menu_items = [
-            {
-                "viewclass": "OneLineListItem",
-                "icon": "git",
-                "height": dp(56),
-                "text": f"{i}",
-            } for i in ['Diário', 'Mensal']]
-        print(menu_items)
-        print(self.ids)
-        self.menu = MDDropdownMenu(
-            caller=button,
-            items=menu_items,
-            width_mult=2,
-        )
-        self.menu.open()
+        try:
+            print(button)
+            menu_items = [
+                {
+                    "viewclass": "OneLineListItem",
+                    "icon": "git",
+                    "height": dp(56),
+                    "text": f"{i}",
+                } for i in ['Diário', 'Mensal']]
+            print(menu_items)
+            print(self.ids)
+            self.menu = MDDropdownMenu(
+                caller=button,
+                items=menu_items,
+                width_mult=2,
+            )
+            self.menu.open()
+        except Exception as e:
+            raise InterfaceException(e)()
     def set_item(self, args):
         print(args)

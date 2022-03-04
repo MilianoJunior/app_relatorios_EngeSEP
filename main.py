@@ -17,13 +17,14 @@ import os
 # minhas classes
 from view.composite import Composite
 from assets.fonts.font import font_choice
-#from controllers.excpetions.RootException import InterfaceException
+from controllers.excpetions.RootException import InterfaceException
 
 # configurações das variaveis de ambiente
 SYSTEM_OPERACIONAL = os.uname()
-BASE_DIR = Path(__file__).resolve().parent.parent
-os.environ['IMAGENS'] = os.path.join(BASE_DIR,f"APPDB{os.sep}assets{os.sep}imagens")
-os.environ['FONTS'] = os.path.join(BASE_DIR,f"APPDB{os.sep}assets{os.sep}fonts")
+BASE_DIR = os.getcwd()
+os.environ['ROOT_ENGESEP'] = BASE_DIR
+os.environ['IMAGENS'] = os.path.join(BASE_DIR,f"assets{os.sep}imagens")
+os.environ['FONTS'] = os.path.join(BASE_DIR,f"assets{os.sep}fonts")
 
 # instancia principal do APP
 class EngeSEPRelatorios(MDApp):
@@ -36,9 +37,15 @@ class EngeSEPRelatorios(MDApp):
         Window.left = 10
 
     def build(self):
-        return Composite()()
+        try:
+            return Composite()()
+        except:
+            return InterfaceException.box
+        finally:
+            print('Segue o jogo')
 
     def on_start(self):
+        print('On start')
         if MODO == 'desenvolvimento':
             run(self)
 

@@ -40,7 +40,7 @@ class Interface(Screen):
     '''
         description: Screen com as configurações de layout para compor os widgets.
 
-        return screen layout
+        return screen layout-
     '''
     def __init__(self, name, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -49,7 +49,6 @@ class Interface(Screen):
     def __call__(self):
         try:
             # criação do layout principal
-            b += 1
             layout = MDFloatLayout()
             layout.md_bg_color = cores[thema]['background']
             [self.pos_porcent(w) for w in widgets]

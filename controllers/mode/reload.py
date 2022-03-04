@@ -1,14 +1,26 @@
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from threading import Thread
-from kivy.core.window import Window
 from datetime import datetime
 from multiprocessing import Process
-import os, signal
+import os
 
-registro_modulos = ['main.py', 'composite.py', 'reload.py','login.py',
-                    'interface.py','toolbar_menu.py','card_info.py',
-                    'menu_print.py','font.py','RootException.py']
+arquivos = []
+def modulos(path):
+    global arquivos
+    for obj in os.listdir(path):
+        if obj.endswith(".py") and os.path.isfile(obj):
+            arquivos.append(obj)
+        elif os.path.isdir(obj):
+            print(obj)
+            print(path)
+            path_recursive = os.path.join(path,obj)
+            print(path_recursive)
+            modulos(path_recursive)
+
+registro_modulos = ['main.py','composite.py','login.py','reload.py','interface.py',
+                    'config.py','button_plus.py','button.py','dropdown.py','input.py',
+                    'font.py','button_plus.py','card_info.py','menu_logo.py','menu_print.py',
+                    'toolbar_menu.y'] # register module
 
 def aux(*args):
     os.system("gnome-terminal -- python3 main.py")
@@ -22,7 +34,8 @@ class KvHandler(FileSystemEventHandler):
     def on_modified(self, event):
         for s in registro_modulos:
             if os.path.basename(event.src_path) == s:
-                print('####################################')
+                print('######################################')
+                print(arquivos)
                 print('Hora: ', datetime.now())
                 print('Houve modificação no arquivo: ',s)
                 print('pid aplicação: ',os.getppid())
@@ -34,8 +47,20 @@ class KvHandler(FileSystemEventHandler):
                 return
 
 def run(app: object):
-    PATH = "/home/jrmfilho23/Documentos/EngeSEP/apps_mvc/APPDB"
+    PATH = os.getcwd()
+    # modulos(os.environ['PWD'])
     o = Observer()
     o.schedule(KvHandler(app), PATH, recursive=True)
     o.start()
+
+
+
+
+
+
+
+
+
+
+
 
