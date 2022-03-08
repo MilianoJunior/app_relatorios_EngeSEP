@@ -4,26 +4,17 @@ from datetime import datetime
 from multiprocessing import Process
 import os
 
-arquivos = []
-def modulos(path):
-    global arquivos
-    for obj in os.listdir(path):
-        if obj.endswith(".py") and os.path.isfile(obj):
-            arquivos.append(obj)
-        elif os.path.isdir(obj):
-            print(obj)
-            print(path)
-            path_recursive = os.path.join(path,obj)
-            print(path_recursive)
-            modulos(path_recursive)
-
 registro_modulos = ['main.py','composite.py','login.py','reload.py','interface.py',
                     'config.py','button_plus.py','button.py','dropdown.py','input.py',
                     'font.py','button_plus.py','card_info.py','menu_logo.py','menu_print.py',
-                    'toolbar_menu.y'] # register module
+                    'toolbar_menu.py'] # register module
 
 def aux(*args):
-    os.system("gnome-terminal -- python3 main.py")
+    print('abrindo novo app')
+    module = 'main.py'
+    commands = {'nt': f"start python {module}",
+                'posix': f"gnome-terminal -- python3 {module}"}
+    os.system(commands[os.name])
 
 class KvHandler(FileSystemEventHandler):
 
@@ -34,12 +25,12 @@ class KvHandler(FileSystemEventHandler):
     def on_modified(self, event):
         for s in registro_modulos:
             if os.path.basename(event.src_path) == s:
-                print('######################################')
-                print(arquivos)
+                print('##########################################')
                 print('Hora: ', datetime.now())
                 print('Houve modificação no arquivo: ',s)
                 print('pid aplicação: ',os.getppid())
                 self.app.get_running_app().stop()
+                os.system('exit()')
                 p = Process(target=aux)
                 p.start()
                 p.join()

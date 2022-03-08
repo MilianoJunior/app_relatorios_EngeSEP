@@ -3,7 +3,7 @@ from kivymd.uix.label import MDLabel
 from os import path
 import sys
 
-class InterfaceException(Exception):
+class InterfaceException(BaseException):
 
     data_: list = []
     box: object = MDBoxLayout(orientation='vertical')
@@ -21,7 +21,6 @@ class InterfaceException(Exception):
                       'message' : self.data_[-1],
                       'path'    : path.abspath(__file__),
                     }
-
         texto = ''
         for name, value in details.items():
             texto += f'\n{str(name)} : {value}'

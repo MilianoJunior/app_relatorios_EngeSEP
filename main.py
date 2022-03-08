@@ -41,8 +41,12 @@ class EngeSEPRelatorios(MDApp):
             return Composite()()
         except:
             return InterfaceException.box
-        finally:
-            print('Segue o jogo')
+
+    def on_stop(self):
+        print('############')
+        print('Executando o fechamento do app')
+        print('#############')
+        return super().on_stop()
 
     def on_start(self):
         print('On start')

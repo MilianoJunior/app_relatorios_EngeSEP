@@ -5,29 +5,36 @@ from kivy.metrics import dp
 from controllers.excpetions.RootException import InterfaceException
 
 class DropDownMenu(MDDropdownMenu):
-
-    def __init__(self, widget, ancora, *args, **kwargs):
+    '''
+    description: dropdow generic for widgets
+    args: ancora: object, list_menu: list[str]
+    return object
+    '''
+    def __init__(self, ancora, list_menu, *args, **kwargs):
         super(DropDownMenu, self).__init__()
-        self.widget = widget
+        self.list_menu = list_menu
         self.ancora = ancora
 
     def __call__(self):
         try:
-            self.width_mult = 4
-            self.background_color = self.widget['cores']['primary']
             menu_items = [
-                            {
-                                "viewclass": "OneLineListItem",
-                                "text": f"Item {i}",
-                                "height": dp(56),
-                                "on_release": lambda x=f"Item {i}": self.menu_callback(x),
-                             } for i in range(5)
-                        ]
+                {
+                    "viewclass": "OneLineListItem",
+                    "icon": "git",
+                    "height": dp(46),
+                    "text": f"{i}",
+                    "on_release": lambda x=i: self.set_item(x),
+                } for i in self.list_menu]
             self.items = menu_items
+            self.caller = self.ancora
+            self.width_mult = 2
             return self
         except Exception as e:
             raise InterfaceException(e)()
 
-
     def menu_callback(self, *args):
-        print('DropMenu', args)
+        print('EsperaDropMenu', args)
+
+    def set_item(self, text_item):
+        print('Execução do controller: ',text_item)
+        self.dismiss()
