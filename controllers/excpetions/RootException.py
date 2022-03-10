@@ -3,7 +3,7 @@ from kivymd.uix.label import MDLabel
 from os import path
 import sys
 
-class InterfaceException(BaseException):
+class InterfaceException(Exception):
 
     data_: list = []
     box: object = MDBoxLayout(orientation='vertical')

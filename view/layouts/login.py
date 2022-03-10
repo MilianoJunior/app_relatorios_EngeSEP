@@ -1,26 +1,57 @@
-from kivymd.uix.stacklayout import MDStackLayout
-from kivymd.uix.boxlayout import MDBoxLayout
+# módulos externos
 from kivymd.uix.floatlayout import MDFloatLayout
-from kivy.uix.button import Button
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.screenmanager import Screen
-from kivy.utils import get_color_from_hex
-from functools import partial
-from collections import namedtuple
-# module my
+from kivy.uix.scrollview import ScrollView
+# modulos da aplicação
+from view.widgets.genericos.input import InputGeneric
+from view.widgets.personalizados.menu_logo import MenuLogo
+from view.widgets.personalizados.multi_button import MultiButton
+from assets.themas_color import cores
 from controllers.excpetions.RootException import InterfaceException
 
-screensize = [360, 731]
-background = get_color_from_hex('#565050')
-widgets_login = [{'CardLogo':{'size':(329, 126),'pos':(16, 83)}},
-                 {'InputEmail':{'size':(329, 65),'pos':(16, 247)}},
-                 {'InputSenha':{'size':(329, 126),'pos':(16, 351)}},
-                 {'ButtonEnviar':{'size':(172, 37),'pos':(94, 453)}}]
+# variaveis globais de configuração dos widgets
+
+thema = 'dark'
+widget_logo = {'name':'MenuLogo',
+               'pos':{'x': 16, 'y': 83},
+               'size':(329,126),
+               'size_g':(360,731),
+               'cores': cores[thema]}
+
+widget_email = {'name':'Email',
+                'pos':{'x': 16, 'y': 247},
+                'size':(329,56),
+                'size_g':(360,731),
+                'tag': 'Email',
+                'icon': "at",
+                'value': False,
+                'cores':cores[thema]}
+
+widget_senha = {'name':'Password',
+                'pos':{'x': 16, 'y': 350},
+                'size':(329,56),
+                'size_g':(360,731),
+                'tag': 'Senha',
+                'icon': "eye-outline",
+                'value': True,
+                'cores':cores[thema]}
+
+widget_multi = {'name':'MultiButton',
+                'pos':{'x': 61, 'y': 489},
+                'size':(236,28),
+                'size_g':(360,731),
+                'tag': ['recuperar senha', 'criar usuário'],
+                'cores':cores[thema]}
+
+
+widgets = [widget_logo, widget_email, widget_senha, widget_multi]
 
 class Login(Screen):
     '''
-    		description: class que compoem a interface login
-            args: name: str
-    		return screen: object
+        description: Screen com as configurações de layout para compor os widgets.
+
+        return screen layout
     '''
     def __init__(self, name, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,19 +59,47 @@ class Login(Screen):
 
     def __call__(self):
         try:
-            # criar objeto layout
-            layout = MDFloatLayout(md_bg_color=background)
-            # compor o objeto layout com os widgets
-            btn = Button(text='Logo',size_hint=(.2, .2), pos_hint={'x':.2, 'y':.5})
-            btn1 = Button(text='play 3',size_hint=(.2, .3), pos_hint={'x':.5, 'y':.5})
-            layout.add_widget(btn)
-            layout.add_widget(btn1)
-            # compor o layout no screen
+            # criação do layout principal
+            layout = MDFloatLayout()
+            layout.md_bg_color = cores[thema]['background']
+            [self.pos_porcent(w) for w in widgets]
+            [self.size_porcent(w) for w in widgets]
+            # criação dos objetos widgets
+            #----------------------------------
+            logo = MenuLogo(widget_logo)()
+            #----------------------------------
+            input_email = InputGeneric(widget_email)()
+            #---------------------------------
+            input_senha = InputGeneric(widget_senha)()
+            #---------------------------------------
+            multi = MultiButton(widget_multi)()
+            # adicionando os objetos no layout
+            layout.add_widget(logo)
+            layout.add_widget(input_email)
+            layout.add_widget(input_senha)
+            layout.add_widget(multi)
+            # adicionando o layout no screen
             self.add_widget(layout)
-
+            # métodos dos objetos
             return self
         except Exception as e:
             raise InterfaceException(e)()
+
+    def size_porcent(self, widget):
+        size_x = widget['size'][0]/widget['size_g'][0]
+        size_y = widget['size'][1]/widget['size_g'][1]
+        widget.update({'size':(size_x, size_y)})
+
+    def pos_porcent(self, widget):
+        print(widget['name'])
+        print(widget['pos'])
+        print(widget['size'])
+        pos_y = 1-((widget['pos']['y'] + widget['size'][1])/widget['size_g'][1])
+        pos_x = widget['pos']['x']/widget['size_g'][0]
+        widget.update({'pos': {'x': pos_x, 'y': pos_y}})
+        
+        print(widget['pos'],'-',widget['size'])
+        print('------')
 
 
 

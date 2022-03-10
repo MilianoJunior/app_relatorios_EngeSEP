@@ -39,17 +39,14 @@ class EngeSEPRelatorios(MDApp):
     def build(self):
         try:
             return Composite()()
+            # return Button(text='oi')
         except:
             return InterfaceException.box
 
     def on_stop(self):
-        print('############')
-        print('Executando o fechamento do app')
-        print('#############')
         return super().on_stop()
 
     def on_start(self):
-        print('On start')
         if MODO == 'desenvolvimento':
             run(self)
 

@@ -6,6 +6,25 @@ from kivymd.uix.toolbar import MDToolbar
 from controllers.excpetions.RootException import InterfaceException
 from view.widgets.genericos.dropdown import DropDownMenu
 
+
+list_screen = [{'route': 'redirect',
+                'value': 'login',
+                'data' : 'login'},
+                {'route': 'redirect',
+                'value': 'principal',
+                'data' : 'principal'},
+                {'route': 'redirect',
+                'value': 'config',
+                'data' : 'configurações'}]
+
+list_user =  [{'route': 'get',
+                'value': 'dark',
+                'data' : 'modo escuro'},
+                {'route': 'get',
+                'value': 'sair',
+                'data' : 'sair'}]
+
+
 class ToolbarMenu(MDToolbar):
 
     def __init__(self, widget, *args, **kwargs):
@@ -15,8 +34,8 @@ class ToolbarMenu(MDToolbar):
     def __call__(self):
         try:
             self.title = 'EngeSEP' + '[color=03DAC6][size=26][sub]' + 'relatórios' + '[/sub][/size][/color]'
-            self.left_action_items = [["menu", lambda x: self.set_menu(x,['login','configurações','principal'])]]
-            self.right_action_items = [["account-circle",lambda x: self.set_menu(x,['sair'])]]
+            self.left_action_items = [["menu", lambda x: self.set_menu(x, list_screen)]]
+            self.right_action_items = [["account-circle",lambda x: self.set_menu(x, list_user)]]
             self.type = 'top'
             self.size_hint = self.widget['size']
             self.pos_hint = self.widget['pos']
@@ -29,6 +48,5 @@ class ToolbarMenu(MDToolbar):
     def set_menu(self, ancora, list_menu):
         try:
             self.menu = DropDownMenu(ancora, list_menu)()
-            self.menu.open()
         except Exception as e:
             raise InterfaceException(e)()

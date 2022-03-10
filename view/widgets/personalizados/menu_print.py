@@ -4,10 +4,18 @@
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.toolbar import MDToolbar, MDBottomAppBar
 from view.widgets.genericos.dropdown import DropDownMenu
-from kivymd.uix.menu import MDDropdownMenu
 from kivy.metrics import dp
 # módulos da aplicação
 from controllers.excpetions.RootException import InterfaceException
+
+# configurações das rotas
+
+list_config = [{'route': 'get',
+                'value': 'diario',
+                'data' : 'diário'},
+                {'route': 'get',
+                'value': 'mensal',
+                'data' : 'mensal'}]
 
 class MenuPrint(MDBoxLayout):
 
@@ -23,14 +31,13 @@ class MenuPrint(MDBoxLayout):
             # configurações do layout para o toolbar
             layout = MDBottomAppBar(md_bg_color = self.widget['cores']['primary'])
             # criação do objeto toolbar
-            toolbar = MDToolbar(title='semanal',
+            toolbar = MDToolbar(title='mensal',
                                 icon='file-pdf-box',
                                 mode='end',
                                 icon_color= self.widget['cores']['linedestaque'])
                                 # on_action_button = self.print_relatorio(self))
             #------ metodo configuração impressão
-            list_menu = ['diário','mensal']
-            toolbar.left_action_items = [["cogs", lambda x: self.active_dropdow(x, list_menu)]]
+            toolbar.left_action_items = [["cogs", lambda x: self.active_dropdow(x, list_config)]]
             toolbar.specific_text_color= self.widget['cores']['line']
             #------ metodo impressão
             toolbar.type='bottom'
