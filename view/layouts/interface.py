@@ -68,7 +68,7 @@ class Interface(Screen):
             widget_card_info.update({'value':'35'})
             card1 = CardInfo(widget_card_info)()
             #-----------------------------------
-            toolbar = ToolbarMenu(widget_menu)()
+            # toolbar = ToolbarMenu(widget_menu)()
             widget_card_info.update({'tag':'UG-02'})
             widget_card_info.update({'value':'93'})
             card2 = CardInfo(widget_card_info)()

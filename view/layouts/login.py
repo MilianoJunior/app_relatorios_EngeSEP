@@ -10,6 +10,7 @@ from view.widgets.personalizados.menu_logo import MenuLogo
 from view.widgets.personalizados.multi_button import MultiButton
 from assets.themas_color import cores
 from controllers.excpetions.RootException import InterfaceException
+from routes.routes import Routes
 
 # variaveis globais de configuração dos widgets
 
@@ -42,12 +43,12 @@ widget_button = {'name':'Button',
                 'pos':{'x': 94, 'y': 453},
                 'size':(172,37),
                 'size_g':(360,731),
-                'tag': 'ENTRAR',
+                'tag': '        ENTRAR        ',
                 'icon': "location-enter",
                 'cores':cores[thema]}
 
 widget_multi = {'name':'MultiButton',
-                'pos':{'x': 61, 'y': 489},
+                'pos':{'x': 61, 'y': 500},
                 'size':(236,28),
                 'size_g':(360,731),
                 'tag': ['recuperar senha', 'criar usuário'],
@@ -84,6 +85,9 @@ class Login(Screen):
             enviar = ButtonGeneric(widget_button)()
             #----------------------------------
             multi = MultiButton(widget_multi)()
+            # vinculando os metodos
+            print(enviar.children)
+            enviar.children[0].bind(on_press=self.logar)
             # adicionando os objetos no layout
             layout.add_widget(logo)
             layout.add_widget(input_email)
@@ -106,6 +110,11 @@ class Login(Screen):
         pos_y = 1-((widget['pos']['y'] + widget['size'][1])/widget['size_g'][1])
         pos_x = widget['pos']['x']/widget['size_g'][0]
         widget.update({'pos': {'x': pos_x, 'y': pos_y}})
+
+    def logar(self, *args):
+        print('logando: ', args)
+        data={'value':'principal'}
+        Routes.redirect(data)
 
 
 
