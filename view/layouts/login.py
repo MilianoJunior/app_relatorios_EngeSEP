@@ -4,6 +4,7 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.screenmanager import Screen
 from kivy.uix.scrollview import ScrollView
 # modulos da aplicação
+from view.widgets.genericos.button import ButtonGeneric
 from view.widgets.genericos.input import InputGeneric
 from view.widgets.personalizados.menu_logo import MenuLogo
 from view.widgets.personalizados.multi_button import MultiButton
@@ -37,6 +38,14 @@ widget_senha = {'name':'Password',
                 'value': True,
                 'cores':cores[thema]}
 
+widget_button = {'name':'Button',
+                'pos':{'x': 94, 'y': 453},
+                'size':(172,37),
+                'size_g':(360,731),
+                'tag': 'ENTRAR',
+                'icon': "location-enter",
+                'cores':cores[thema]}
+
 widget_multi = {'name':'MultiButton',
                 'pos':{'x': 61, 'y': 489},
                 'size':(236,28),
@@ -45,7 +54,7 @@ widget_multi = {'name':'MultiButton',
                 'cores':cores[thema]}
 
 
-widgets = [widget_logo, widget_email, widget_senha, widget_multi]
+widgets = [widget_logo, widget_email, widget_senha, widget_button, widget_multi]
 
 class Login(Screen):
     '''
@@ -71,12 +80,15 @@ class Login(Screen):
             input_email = InputGeneric(widget_email)()
             #---------------------------------
             input_senha = InputGeneric(widget_senha)()
-            #---------------------------------------
+            #------------------------------------
+            enviar = ButtonGeneric(widget_button)()
+            #----------------------------------
             multi = MultiButton(widget_multi)()
             # adicionando os objetos no layout
             layout.add_widget(logo)
             layout.add_widget(input_email)
             layout.add_widget(input_senha)
+            layout.add_widget(enviar)
             layout.add_widget(multi)
             # adicionando o layout no screen
             self.add_widget(layout)
@@ -91,15 +103,9 @@ class Login(Screen):
         widget.update({'size':(size_x, size_y)})
 
     def pos_porcent(self, widget):
-        print(widget['name'])
-        print(widget['pos'])
-        print(widget['size'])
         pos_y = 1-((widget['pos']['y'] + widget['size'][1])/widget['size_g'][1])
         pos_x = widget['pos']['x']/widget['size_g'][0]
         widget.update({'pos': {'x': pos_x, 'y': pos_y}})
-        
-        print(widget['pos'],'-',widget['size'])
-        print('------')
 
 
 
