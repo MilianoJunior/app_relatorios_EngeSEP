@@ -34,7 +34,7 @@ class EngeSEPRelatorios(MDApp):
         self.theme_cls.font_styles.update(font_choice('Spectral'))
         Window.system_size = [360, 731]
         Window.top = 40
-        Window.left = 10
+        Window.left = 1600
 
     def build(self):
         try:

@@ -3,6 +3,9 @@ from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.screenmanager import Screen
 from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
+from kivy.properties import ObjectProperty
+from functools import partial
 # modulos da aplicação
 from view.widgets.personalizados.toolbar_menu import ToolbarMenu
 from view.widgets.personalizados.button_plus import ButtonPlus
@@ -74,7 +77,7 @@ class Config(Screen):
         return screen layout
     '''
     def __init__(self, name, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(Config, self).__init__(*args, **kwargs)
         self.name = name
 
     def __call__(self):
@@ -90,7 +93,7 @@ class Config(Screen):
                                size_hint_y=None,
                                spacing=20)
             self.grid.bind(minimum_height=self.grid.setter('height'))
-            root = ScrollView(size_hint=(1,.9))
+            root = ScrollView(size_hint=(1,1)) #, height=Window.height, width=Window.width)
             # criação dos objetos widgets
             toolbar = ToolbarMenu(widget_menu)()
             #----------------------------------
@@ -98,10 +101,16 @@ class Config(Screen):
             #---------------------------------
             input_localizacao = InputGeneric(widget_localizacao)()
             #------------------------------------
+            input_id = InputGeneric(widget_id)()
+            #------------------------------------
+            input_register = InputGeneric(widget_register)()
+            #--------------------------------------
             nova_leitura = ButtonPlus(widget_button_plus)()
             # vinculando métodos
-            nova_leitura.children[0].bind(on_release=self.create_input)
+            nova_leitura.children[0].bind(on_release=partial(self.create_input,root))
             # adicionando os objetos no layout
+            self.grid.add_widget(input_id)
+            self.grid.add_widget(input_register)
             root.add_widget(self.grid)
             #-----------------------------
             layout.add_widget(toolbar)
@@ -125,17 +134,10 @@ class Config(Screen):
         pos_x = widget['pos']['x']/widget['size_g'][0]
         widget.update({'pos': {'x': pos_x, 'y': pos_y}})
 
-    def create_input(self, *args):
+    def create_input(self, root, *args):
         print('adicionando elementos',args)
         input_id = InputGeneric(widget_id)()
         input_register = InputGeneric(widget_register)()
         self.grid.add_widget(input_id)
         self.grid.add_widget(input_register)
-
-
-
-
-
-
-
-
+        
