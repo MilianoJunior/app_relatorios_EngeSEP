@@ -50,7 +50,6 @@ class EngeSEPRelatorios(MDApp):
         if MODO == 'desenvolvimento':
             run(self)
 
-
 if __name__ == "__main__":
     app = EngeSEPRelatorios()
     app.run()

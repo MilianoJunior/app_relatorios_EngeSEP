@@ -86,7 +86,6 @@ class Login(Screen):
             #----------------------------------
             multi = MultiButton(widget_multi)()
             # vinculando os metodos
-            print(enviar.children)
             enviar.children[0].bind(on_press=self.logar)
             # adicionando os objetos no layout
             layout.add_widget(logo)

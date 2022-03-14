@@ -12,7 +12,8 @@ class InputGeneric(MDBoxLayout):
         super(InputGeneric, self).__init__(*args, **kwargs)
         self.widget = widget
         self.size_hint = widget['size']
-        self.pos_hint = widget['pos']
+        if not widget['pos'] is None:
+            self.pos_hint = widget['pos']
         self.padding = [12,0,12,0]
 
     def __call__(self):

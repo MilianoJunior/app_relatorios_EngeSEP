@@ -12,10 +12,12 @@ from routes.routes import define_manager
 
 
 class Composite(ScreenManager):
+    '''
+    description: composição dos layouts em uma classe central
+    '''
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # screen_manager = self
 
     def __call__(self):
         try:

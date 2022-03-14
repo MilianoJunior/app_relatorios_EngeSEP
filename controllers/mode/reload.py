@@ -8,7 +8,7 @@ registro_modulos = ['main.py','composite.py','login.py','reload.py','interface.p
                     'config.py','button_plus.py','button.py','dropdown.py','input.py',
                     'font.py','button_plus.py','card_info.py','menu_logo.py','menu_print.py',
                     'toolbar_menu.py','routes.py','create_user.py','config.py','themas_color.py',
-                    'RootException.py','multi_button.py'] # register module
+                    'RootException.py','multi_button.py','input_config.py'] # register module
 
 def aux(*args):
     print('abrindo novo app')
