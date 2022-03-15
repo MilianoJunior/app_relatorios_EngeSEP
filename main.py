@@ -32,7 +32,7 @@ class EngeSEPRelatorios(MDApp):
     def __init__(self, *args, **kwargs):
         super(EngeSEPRelatorios, self).__init__(*args, **kwargs)
         self.theme_cls.font_styles.update(font_choice('Spectral'))
-        Window.system_size = [360, 731]
+        Window.system_size = [360, 730]
         Window.top = 40
         Window.left = 1600
 

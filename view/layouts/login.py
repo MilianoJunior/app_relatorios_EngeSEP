@@ -16,41 +16,41 @@ from routes.routes import Routes
 
 thema = 'dark'
 widget_logo = {'name':'MenuLogo',
-               'pos':{'x': 16, 'y': 83},
+               'pos':{'x': 15, 'y': 76},
                'size':(329,126),
-               'size_g':(360,731),
+               'size_g':(360,730),
                'cores': cores[thema]}
 
 widget_email = {'name':'Email',
-                'pos':{'x': 16, 'y': 247},
+                'pos':{'x': 15, 'y': 230},
                 'size':(329,56),
-                'size_g':(360,731),
+                'size_g':(360,730),
                 'tag': 'Email',
                 'icon': "at",
                 'value': False,
                 'cores':cores[thema]}
 
 widget_senha = {'name':'Password',
-                'pos':{'x': 16, 'y': 350},
+                'pos':{'x': 15, 'y': 314},
                 'size':(329,56),
-                'size_g':(360,731),
+                'size_g':(360,730),
                 'tag': 'Senha',
                 'icon': "eye-outline",
                 'value': True,
                 'cores':cores[thema]}
 
 widget_button = {'name':'Button',
-                'pos':{'x': 94, 'y': 453},
+                'pos':{'x': 93, 'y': 398},
                 'size':(172,37),
-                'size_g':(360,731),
+                'size_g':(360,730),
                 'tag': '        ENTRAR        ',
                 'icon': "location-enter",
                 'cores':cores[thema]}
 
 widget_multi = {'name':'MultiButton',
-                'pos':{'x': 61, 'y': 500},
+                'pos':{'x': 61, 'y': 463},
                 'size':(236,28),
-                'size_g':(360,731),
+                'size_g':(360,730),
                 'tag': ['recuperar senha', 'criar usuário'],
                 'cores':cores[thema]}
 

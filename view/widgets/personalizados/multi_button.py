@@ -5,6 +5,7 @@ from kivymd.uix.card import MDSeparator
 import os
 # modulos internos
 from controllers.excpetions.RootException import InterfaceException
+from routes.routes import Routes 
 
 # font_path =os.path.join(os.environ['FONTS'], 'Spectral','Spectral-Regular.ttf')
 
@@ -46,4 +47,6 @@ class MultiButton(MDBoxLayout):
             raise InterfaceException(e)()
 
     def redirecionar(self, *args):
+        
+        Routes.redirect()
         print('redirecionar', args[0].text)

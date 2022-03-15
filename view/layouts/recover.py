@@ -14,19 +14,22 @@ from controllers.excpetions.RootException import InterfaceException
 # variaveis globais de configuração dos widgets
 
 thema = 'dark'
-widget_menu = {'name':'ToolbarMenu',
-               'pos':{'x': 0, 'y': 0},
-               'size':(360,56),
-               'size_g':(360,731),
-               'cores': cores[thema]}
+widget_email = {'name':'Email',
+                'pos':{'x': 16, 'y': 247},
+                'size':(329,56),
+                'size_g':(360,731),
+                'tag': 'Email',
+                'icon': "at",
+                'value': False,
+                'cores':cores[thema]}
 
-widget_card_info = {'name':'CardInfo',
-                   'pos':{'center_x': .5, 'center_y': .5},
-                   'size':(344,250),
-                   'size_g':(360,731),
-                   'tag': 'UG',
-                   'value': 0,
-                   'cores':cores[thema]}
+widget_button = {'name':'Button',
+                'pos':{'x': 94, 'y': 453},
+                'size':(172,37),
+                'size_g':(360,731),
+                'tag': '        RECUPERAR        ',
+                'icon': "location-enter",
+                'cores':cores[thema]}
 
 widget_print = {'name':'MenuPrint',
                 'pos':{'x': 0, 'y': 667},
@@ -35,7 +38,7 @@ widget_print = {'name':'MenuPrint',
                 'cores':cores[thema]}
 
 
-widgets = [widget_menu, widget_print]
+widgets = [widget_email, widget_button]
 
 class RecoverPassword(Screen):
     '''
